@@ -25,9 +25,18 @@ options(scipen = 999)
 
 ## Load the Data
 ```{r}
-cardiac <- read_csv("data/cardiac-surgery.csv")
+cardiac <- read_csv("data/cardiac-surgery.csv") %>% clean_names()
 ```
 
+```{r}
+glimpse(cardiac)
+```
+
+## Cleaning the Data
+```{r}
+cardiac <- cardiac %>% 
+  mutate(year_of_hospital_discharge = as.factor(year_of_hospital_discharge))
+```
 
 
 
