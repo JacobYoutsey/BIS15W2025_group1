@@ -35,7 +35,8 @@ glimpse(cardiac)
 ## Cleaning the Data
 ```{r}
 cardiac <- cardiac %>% 
-  mutate(year_of_hospital_discharge = as.factor(year_of_hospital_discharge))
+  mutate(year_of_hospital_discharge = as.factor(year_of_hospital_discharge)) %>% 
+  mutate(facility_id = as.factor(facility_id))
 ```
 
 
