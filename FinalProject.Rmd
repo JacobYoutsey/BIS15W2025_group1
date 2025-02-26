@@ -1,0 +1,34 @@
+---
+title: "Final Project"
+output: html_document
+date: "2025-02-26"
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Load the libraries
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(janitor)
+library(naniar)
+library(ggmap)
+```
+
+```{r}
+options(scipen = 999)
+```
+
+
+## Load the Data
+```{r}
+cardiac <- read_csv("data/cardiac-surgery.csv")
+```
+
+
+
+
+
