@@ -39,6 +39,20 @@ cardiac <- cardiac %>%
   mutate(facility_id = as.factor(facility_id))
 ```
 
+```{r}
+cardiac <- cardiac %>% 
+  mutate(across(everything(), tolower))
+cardiac
+```
 
+```{r}
+cardiac <- cardiac %>% 
+  mutate(hospital_name = str_replace(hospital_name, " ", "_")) %>% 
+  mutate(detailed_region = str_replace(detailed_region, " ", "_")) %>% 
+  mutate(comparison_results = str_replace(comparison_results, " ", "_")) %>% 
+  mutate(hospital_name = str_remove(hospital_name, "-")) %>% 
+  mutate(detailed_region = str_remove(detailed_region, "-"))
+cardiac
+```
 
 
