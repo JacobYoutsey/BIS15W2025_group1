@@ -48,6 +48,8 @@ cardiac
 
 ```{r}
 cardiac <- cardiac %>% 
+  #mutate(across(everything) ~ str_replace(" ", "_"))
+  #mutate(across(everything) ~ sr_remove("-"))
   mutate(hospital_name = str_replace(hospital_name, " ", "_")) %>% 
   mutate(detailed_region = str_replace(detailed_region, " ", "_")) %>% 
   mutate(comparison_results = str_replace(comparison_results, " ", "_")) %>% 
