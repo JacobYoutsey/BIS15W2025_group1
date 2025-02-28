@@ -46,13 +46,21 @@ cardiac
 ```
 
 ```{r}
-cardiac <- cardiac %>% 
-  mutate(hospital_name = str_replace(hospital_name, " ", "_")) %>% 
-  mutate(detailed_region = str_replace(detailed_region, " ", "_")) %>% 
-  mutate(comparison_results = str_replace(comparison_results, " ", "_")) %>% 
-  mutate(hospital_name = str_remove(hospital_name, "-")) %>% 
-  mutate(detailed_region = str_remove(detailed_region, "-"))
+cardiac <- cardiac %>%
+  mutate(across(everything(), tolower)) %>% 
+  mutate(across(everything(), ~ str_replace_all((.), " ", "_"))) %>% 
+  mutate(across(everything(), ~ str_replace_all((.), "__", "_"))) %>% 
+  mutate(across(-year_of_hospital_discharge, ~ str_remove((.), "-")))
 cardiac
+```
+
+Have to separate the data, as some of them are over a range of a couple of years, some of them are year by year
+```{r}
+sites_with_ranges <- cardiac %>%
+  filter(str_detect(year_of_hospital_discharge, "-", negate = FALSE))
+
+sites_per_year <- cardiac %>% 
+  filter(str_detect(year_of_hospital_discharge, "-", negate = TRUE))
 ```
 
 
