@@ -59,3 +59,26 @@ cardiac
 ```
 
 
+## Plots
+
+What is the procedure with the highest observed mortality rate?
+```{r}
+cardiac %>% 
+  group_by(procedure) %>% 
+  summarize(avg_mortality = mean(observed_mortality_rate)) %>% 
+  ggplot(aes(x = reorder(procedure, avg_mortality), y = avg_mortality))+
+  geom_col(color = "black", fill = "lightblue")+
+  coord_flip()+
+  labs(title = "Average Observed Mortality Rate by Procedure",
+       x = "Procedure",
+       y = "Mortality Rate")+
+  theme_light(base_size = 12)
+```
+
+
+
+## Shiny App
+```{r}
+
+```
+
