@@ -66,6 +66,13 @@ What is the procedure with the highest observed mortality rate?
 cardiac %>% 
   group_by(procedure) %>% 
   summarize(avg_mortality = mean(observed_mortality_rate)) %>% 
+  arrange(-avg_mortality)
+```
+
+```{r}
+cardiac %>% 
+  group_by(procedure) %>% 
+  summarize(avg_mortality = mean(observed_mortality_rate)) %>% 
   ggplot(aes(x = reorder(procedure, avg_mortality), y = avg_mortality))+
   geom_col(color = "black", fill = "lightblue")+
   coord_flip()+
@@ -76,6 +83,40 @@ cardiac %>%
 ```
 
 
+How has the mortality rate changed for cardiac surgery over time in each region?
+```{r}
+#I'll come back to this later if I figure out the year stuff but feel free to take a crack at it :)
+```
+
+
+How does the expected mortality rate compare to the observed mortality rate?
+```{r}
+#I don't know which graph to plot for this one but if you can figure it out that would be great. I was thinking maybe scatter but I don't know for sure
+```
+
+
+Which region has the highest mortality rate?
+```{r}
+cardiac %>% 
+  group_by(region) %>% 
+  summarize(avg_mortality = mean(observed_mortality_rate)) %>% 
+  arrange(-avg_mortality)
+```
+
+```{r}
+cardiac %>% 
+  group_by(region) %>% 
+  summarize(avg_mortality = mean(observed_mortality_rate)) %>% 
+  ggplot(aes(x = reorder(region, avg_mortality), y = avg_mortality))+
+  geom_col(color = "black", fill = "lightpink")+
+  coord_flip()+
+  labs(title = "Average Observed Mortality Rate per Region",
+       x = "Region",
+       y = "Mortality Rate")+
+  theme_light(base_size = 12)
+```
+
+It would be cool to plot these hospitals on a map but we would need coordinates for that :,)
 
 ## Shiny App
 ```{r}
