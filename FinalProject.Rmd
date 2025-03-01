@@ -129,7 +129,8 @@ Don't mind the code and names for this, I'm testing out some stuff :D
 ```{r}
 library(shinydashboard)
 
-ui <- dashboardPage(
+ui <- dashboardPage(skin = "red",
+                    
   dashboardHeader(title = "Cardiac Dashboard"),
   
   ## Sidebar content
@@ -142,7 +143,10 @@ ui <- dashboardPage(
       
       menuItem("Counts", 
                tabName = "widgets", 
-               icon = icon("th"))
+               icon = icon("th")),
+      menuItem("Cases",
+               tabName = "cases",
+               icon = icon("folder"))
     )
     ),
   
@@ -174,12 +178,27 @@ ui <- dashboardPage(
                selected="region")
           )
           )
+          ),
+      
+      ## Third tab item
+      tabItem(tabName = "cases",
+        fluidRow(
+          box(plotOutput("plot3", height = 250)), # box is a container for the plot
+          box(title = "Controls", # box is a container for the controls
+              selectInput("y", 
+               "Select Hospital", 
+               choices=c(unique(cardiac$hospital_name))
+               )
           )
           )
           )
           )
-
+          )
+          )
+          
 server <- function(input, output, session) {
+  
+  session$onSessionEnded(stopApp)
 
   output$plot1 <- renderPlot({
 
@@ -195,6 +214,16 @@ server <- function(input, output, session) {
       ggplot(aes_string(x="region", fill=input$x))+
       geom_bar(position="dodge", alpha=0.8, color="black")+
       labs(x=NULL, y=NULL, fill="Fill Variable")
+    
+  })
+    
+    output$plot3 <- renderPlot({
+    
+    cardiac %>% 
+      filter(hospital_name == input$y) %>% 
+      ggplot(aes_string(x="year_of_hospital_discharge", y = "number_of_cases"))+
+      geom_col(alpha=0.8, color="black")+
+      labs(x=NULL, y=NULL)
     
   })
     
