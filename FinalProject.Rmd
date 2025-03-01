@@ -16,6 +16,7 @@ library(tidyverse)
 library(janitor)
 library(naniar)
 library(ggmap)
+library(shiny)
 ```
 
 ```{r}
@@ -125,6 +126,80 @@ It would be cool to plot these hospitals on a map but we would need coordinates 
 
 ## Shiny App
 ```{r}
+#Don't mind the code and names for this, I'm testing out some gizmo
+library(shinydashboard)
 
+ui <- dashboardPage(
+  dashboardHeader(title = "Cardiac Dashboard"),
+  
+  ## Sidebar content
+  dashboardSidebar(
+    sidebarMenu(
+      
+      menuItem("Observed Mortality Rate", 
+               tabName = "dashboard", 
+               icon = icon("dashboard")),
+      
+      menuItem("Counts", 
+               tabName = "widgets", 
+               icon = icon("th"))
+    )
+    ),
+  
+  ## Body content
+  dashboardBody(
+    
+    tabItems(
+  
+      ## First tab content    
+      tabItem(tabName = "dashboard",
+        fluidRow(
+          box(plotOutput("plot1", height = 250)), # box is a container for the plot
+          box(title = "Controls", # box is a container for the controls
+              selectInput("region", 
+                          "Select Region of Interest:", 
+                          choices=unique(cardiac$region))
+          )
+          )
+          ),
+
+      ## Second tab item 
+      tabItem(tabName = "widgets",
+        fluidRow(
+          box(plotOutput("plot2", height = 250)), # box is a container for the plot
+          box(title = "Controls", # box is a container for the controls
+              radioButtons("x", 
+               "Select Fill Variable", 
+               choices=c("region", "procedure"),
+               selected="region")
+          )
+          )
+          )
+          )
+          )
+          )
+
+server <- function(input, output, session) {
+
+  output$plot1 <- renderPlot({
+
+    cardiac %>%
+      filter(region == input$region) %>%
+      ggplot(aes(x = observed_mortality_rate)) + 
+      geom_density(color = "black", fill = "steelblue", alpha = 0.6)
+  })
+  
+    output$plot2 <- renderPlot({
+    
+    cardiac %>% 
+      ggplot(aes_string(x="region", fill=input$x))+
+      geom_bar(position="dodge", alpha=0.8, color="black")+
+      labs(x=NULL, y=NULL, fill="Fill Variable")
+    
+  })
+    
+}
+
+shinyApp(ui, server)
 ```
 
