@@ -125,8 +125,8 @@ cardiac %>%
 It would be cool to plot these hospitals on a map but we would need coordinates for that :,)
 
 ## Shiny App
+Don't mind the code and names for this, I'm testing out some stuff :D
 ```{r}
-#Don't mind the code and names for this, I'm testing out some gizmo
 library(shinydashboard)
 
 ui <- dashboardPage(
