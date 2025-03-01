@@ -222,6 +222,7 @@ server <- function(input, output, session) {
     cardiac %>% 
       filter(hospital_name == input$y) %>% 
       ggplot(aes_string(x="year_of_hospital_discharge", y = "number_of_cases"))+
+      coord_flip()+
       geom_col(alpha=0.8, color="black")+
       labs(x=NULL, y=NULL)
     
