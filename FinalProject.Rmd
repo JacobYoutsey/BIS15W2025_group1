@@ -24,9 +24,21 @@ options(scipen = 999)
 ```
 
 
+```{r}
+locations <- read.csv("Health_Facility_General_Information.csv") %>% 
+  rename("Facility ID"="Facility.ID") %>% 
+  summarise(across(everything(), first)) 
+```
+
+```{r}
+merged_data_set <- left_join(cardiac, locations, by="Facility ID")
+```
+
+
+
 ## Load the Data
 ```{r}
-cardiac <- read_csv("data/cardiac-surgery.csv") %>% clean_names()
+cardiac <- read_csv("data/cardiac-surgery.csv")
 ```
 
 ```{r}
