@@ -140,6 +140,7 @@ cardiac %>%
 
 It would be cool to plot these hospitals on a map but we would need coordinates for that :,)
 
+
 ## Shiny App
 Don't mind the code and names for this, I'm testing out some stuff :D
 ```{r}
@@ -262,7 +263,9 @@ server <- function(input, output, session) {
     
     sites_per_year %>% 
       filter(hospital_name == input$y) %>% 
-      ggplot(aes_string(x="year_of_hospital_discharge", y = "number_of_cases"))+
+      group_by(year_of_hospital_discharge) %>% 
+      summarize(total_cases = sum(number_of_cases)) %>% 
+      ggplot(aes_string(x="year_of_hospital_discharge", y = "total_cases"))+
       coord_flip()+
       geom_col(alpha=0.8, color="black")+
       labs(x=NULL, y=NULL)
@@ -273,7 +276,9 @@ server <- function(input, output, session) {
     
     sites_with_ranges %>% 
       filter(hospital_name == input$y) %>% 
-      ggplot(aes_string(x="year_of_hospital_discharge", y = "number_of_cases"))+
+      group_by(year_of_hospital_discharge) %>% 
+      summarize(total_cases_b = sum(number_of_cases)) %>% 
+      ggplot(aes_string(x="year_of_hospital_discharge", y = "total_cases_b"))+
       coord_flip()+
       geom_col(alpha=0.8, color="black")+
       labs(x=NULL, y=NULL)
