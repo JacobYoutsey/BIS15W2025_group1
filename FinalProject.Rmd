@@ -21,17 +21,21 @@ library(shiny)
 
 ```{r}
 options(scipen = 999)
+
+locations <- read.csv("Health_Facility_General_Information.csv")
 ```
 
 
 ```{r}
-locations <- read.csv("Health_Facility_General_Information.csv") %>% 
-  rename("Facility ID"="Facility.ID") %>% 
-  summarise(across(everything(), first)) 
+locations <- locations %>% 
+    group_by(Facility.ID) %>% 
+    summarise(across(everything(), first)) %>% 
+  rename("Facility ID"=Facility.ID)
 ```
 
 ```{r}
 merged_data_set <- left_join(cardiac, locations, by="Facility ID")
+
 ```
 
 
