@@ -141,7 +141,7 @@ Don't mind the code and names for this, I'm testing out some stuff :D
 ```{r}
 library(shinydashboard)
 
-ui <- dashboardPage(skin = "olivedrab",
+ui <- dashboardPage(skin = "purple",
                     
   dashboardHeader(title = "Cardiac Dashboard"),
   
@@ -198,7 +198,16 @@ ui <- dashboardPage(skin = "olivedrab",
       ## Third tab item
       tabItem(tabName = "cases",
         fluidRow(
-          box(plotOutput("plot3", height = 250)), # box is a container for the plot
+          box(plotOutput("plot3a", height = 250)), # box is a container for the plot
+          box(title = "Controls", # box is a container for the controls
+              selectInput("y", 
+               "Select Hospital", 
+               choices=c(unique(cardiac$hospital_name))
+          )
+          )
+          ),
+        fluidRow(
+          box(plotOutput("plot3b", height = 250)), # box is a container for the plot
           box(title = "Controls", # box is a container for the controls
               selectInput("y", 
                "Select Hospital", 
@@ -245,9 +254,9 @@ server <- function(input, output, session) {
     
   })
     
-    output$plot3 <- renderPlot({
+    output$plot3a <- renderPlot({
     
-    cardiac %>% 
+    sites_per_year %>% 
       filter(hospital_name == input$y) %>% 
       ggplot(aes_string(x="year_of_hospital_discharge", y = "number_of_cases"))+
       coord_flip()+
@@ -256,6 +265,16 @@ server <- function(input, output, session) {
     
   })
     
+    output$plot3b <- renderPlot({
+    
+    sites_with_ranges %>% 
+      filter(hospital_name == input$y) %>% 
+      ggplot(aes_string(x="year_of_hospital_discharge", y = "number_of_cases"))+
+      coord_flip()+
+      geom_col(alpha=0.8, color="black")+
+      labs(x=NULL, y=NULL)
+    
+  })
 }
 
 shinyApp(ui, server)
