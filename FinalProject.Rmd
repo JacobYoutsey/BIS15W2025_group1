@@ -129,7 +129,7 @@ Don't mind the code and names for this, I'm testing out some stuff :D
 ```{r}
 library(shinydashboard)
 
-ui <- dashboardPage(skin = "red",
+ui <- dashboardPage(skin = "olivedrab",
                     
   dashboardHeader(title = "Cardiac Dashboard"),
   
