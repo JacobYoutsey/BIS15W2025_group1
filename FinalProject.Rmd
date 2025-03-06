@@ -162,7 +162,10 @@ ui <- dashboardPage(skin = "olivedrab",
                icon = icon("th")),
       menuItem("Cases",
                tabName = "cases",
-               icon = icon("folder"))
+               icon = icon("folder-open")),
+      menuItem("Hospital Map",
+               tabName = "map",
+               icon = icon("earth-americas"))
     )
     ),
   
@@ -204,13 +207,26 @@ ui <- dashboardPage(skin = "olivedrab",
               selectInput("y", 
                "Select Hospital", 
                choices=c(unique(cardiac$hospital_name))
-               )
+          )
+          )
+          )
+          ),
+        
+        tabItem(tabName = "map",
+          fluidRow(
+            box(plotOutput("plot4", height = 250)),
+            box(title = "Controls",
+                selectInput("z",
+                            "Select Region",
+                             choices = c(unique(cardiac$region))
+          
           )
           )
           )
           )
           )
           )
+  )
           
 server <- function(input, output, session) {
   
