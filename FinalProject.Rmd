@@ -55,7 +55,7 @@ map1 <- get_stadiamap(bbox, maptype = "stamen_terrain", zoom=7) #Make ur basemap
 ggmap(map1)
 
 ggmap(map1) + 
-  geom_point(data = cardiac, aes(facility_longitude, latitude), size=0.4) + #WE just add the chart in without using ggplot! 
+  geom_point(data = cardiac, aes(facility_longitude, facility_latitude, size = number_of_cases)) + #WE just add the chart in without using ggplot! 
   labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") 
 ```
 
