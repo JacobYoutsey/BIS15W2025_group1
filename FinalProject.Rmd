@@ -22,53 +22,71 @@ library(shiny)
 ```{r}
 options(scipen = 999)
 
-locations <- read.csv("Health_Facility_General_Information.csv")
+locations <- read.csv("Health_Facility_General_Information.csv") %>% 
+  clean_names()
+
+cardiac <- read_csv("data/cardiac-surgery.csv") %>% 
+  clean_names()
 ```
 
 
 ```{r}
 locations <- locations %>% 
-    group_by(Facility.ID) %>% 
-    summarise(across(everything(), first)) %>% 
-  rename("Facility ID"=Facility.ID)
+    group_by(facility_id) %>% 
+    summarise(across(everything(), first)) 
 ```
 
 ```{r}
-merged_data_set <- left_join(cardiac, locations, by="Facility ID")
+cardiac <- left_join(cardiac, locations, by="facility_id")
+```
+Map:
+```{r}
+register_stadiamaps("e2de824a-0995-4a51-915c-33c14c061e7b", write = FALSE) 
+cardiac %>%  #GET MAX LAT AND LON FROM CODE BELOW!!! EASY MAKES SENSE
+  select(facility_longitude, facility_latitude) %>% 
+  summary()
 
+lat <- c(40.58, 44.70) #we got tehse values from summary above
+long <- c(-78.87, -72.98)
+bbox <- make_bbox(long, lat, f = 0.03)
+
+map1 <- get_stadiamap(bbox, maptype = "stamen_terrain", zoom=7) #Make ur basemap, there are other styles which you could find from this link, https://docs.stadiamaps.com/themes/
+
+ggmap(map1)
+
+ggmap(map1) + 
+  geom_point(data = cardiac, aes(facility_longitude, latitude), size=0.4) + #WE just add the chart in without using ggplot! 
+  labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") 
 ```
 
 
 
 ## Load the Data
 ```{r}
-cardiac <- read_csv("data/cardiac-surgery.csv")
+
 ```
 
 ```{r}
-glimpse(cardiac)
+
 ```
 
 ## Cleaning the Data
 ```{r}
-cardiac <- cardiac %>% 
-  mutate(year_of_hospital_discharge = as.factor(year_of_hospital_discharge)) %>% 
-  mutate(facility_id = as.factor(facility_id))
+
 ```
 
 ```{r}
-cardiac <- cardiac %>% 
+cardiac <- merged_data_set %>% 
   mutate(across(everything(), tolower))
-cardiac
 ```
 
 ```{r}
-cardiac <- cardiac %>%
+merged_data_set <- merged_data_set %>%
   mutate(across(everything(), tolower)) %>% 
   mutate(across(everything(), ~ str_replace_all((.), " ", "_"))) %>% 
   mutate(across(everything(), ~ str_replace_all((.), "__", "_"))) %>% 
-  mutate(across(-year_of_hospital_discharge, ~ str_remove((.), "-")))
-cardiac
+  mutate(across(-"Year of Hospital Discharge", ~ str_remove((.), "-")))
+merged_data_set
 ```
 
 Have to separate the data, as some of them are over a range of a couple of years, some of them are year by year
@@ -140,13 +158,12 @@ cardiac %>%
 
 It would be cool to plot these hospitals on a map but we would need coordinates for that :,)
 
-
 ## Shiny App
 Don't mind the code and names for this, I'm testing out some stuff :D
 ```{r}
 library(shinydashboard)
 
-ui <- dashboardPage(skin = "purple",
+ui <- dashboardPage(skin = "olivedrab",
                     
   dashboardHeader(title = "Cardiac Dashboard"),
   
@@ -203,16 +220,7 @@ ui <- dashboardPage(skin = "purple",
       ## Third tab item
       tabItem(tabName = "cases",
         fluidRow(
-          box(plotOutput("plot3a", height = 250)), # box is a container for the plot
-          box(title = "Controls", # box is a container for the controls
-              selectInput("y", 
-               "Select Hospital", 
-               choices=c(unique(cardiac$hospital_name))
-          )
-          )
-          ),
-        fluidRow(
-          box(plotOutput("plot3b", height = 250)), # box is a container for the plot
+          box(plotOutput("plot3", height = 250)), # box is a container for the plot
           box(title = "Controls", # box is a container for the controls
               selectInput("y", 
                "Select Hospital", 
@@ -259,31 +267,17 @@ server <- function(input, output, session) {
     
   })
     
-    output$plot3a <- renderPlot({
+    output$plot3 <- renderPlot({
     
-    sites_per_year %>% 
+    cardiac %>% 
       filter(hospital_name == input$y) %>% 
-      group_by(year_of_hospital_discharge) %>% 
-      summarize(total_cases = sum(number_of_cases)) %>% 
-      ggplot(aes_string(x="year_of_hospital_discharge", y = "total_cases"))+
+      ggplot(aes_string(x="year_of_hospital_discharge", y = "number_of_cases"))+
       coord_flip()+
       geom_col(alpha=0.8, color="black")+
       labs(x=NULL, y=NULL)
     
   })
     
-    output$plot3b <- renderPlot({
-    
-    sites_with_ranges %>% 
-      filter(hospital_name == input$y) %>% 
-      group_by(year_of_hospital_discharge) %>% 
-      summarize(total_cases_b = sum(number_of_cases)) %>% 
-      ggplot(aes_string(x="year_of_hospital_discharge", y = "total_cases_b"))+
-      coord_flip()+
-      geom_col(alpha=0.8, color="black")+
-      labs(x=NULL, y=NULL)
-    
-  })
 }
 
 shinyApp(ui, server)
