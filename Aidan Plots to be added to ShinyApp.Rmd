@@ -1,0 +1,40 @@
+```{r}
+#output$plot4a <- renderPlot({#Volume of Cases by Procedure Type
+
+#need to fix the names
+    
+    cardiac %>% #prob can do all sites, years dont matter. or we could split by year to see if there ischange but i doubt it
+     # filter(hospital_name == input$y) %>% 
+      group_by(Procedure) %>% 
+      summarize(totalOps = sum(number_of_cases)) %>% 
+      ggplot(aes(x = Procedure , y = totalOps, fill= totalOps))+
+      geom_bar(stat = "identity", alpha=0.8, color="black")+
+      labs(title="Total Cases by Procedure Type", 
+       x="Procedure Type", 
+       y="Number of Cases")+ 
+      theme_minimal()
+```
+
+
+
+
+Plot for Highest/ spread of mortality rate by procedure type
+
+We can do one for observed motr rate and one for expected 
+or
+observed is fine too
+will take averge of mort rate
+```{r}
+cardiac %>% 
+     
+      group_by(Procedure) %>% 
+      summarize(AvgMortRate = mean(`Observed Mortality Rate`)) %>% 
+      ggplot(aes(x = Procedure , y = AvgMortRate, fill= AvgMortRate))+
+      geom_bar(stat = "identity", alpha=0.8, color="black")+
+      labs(title="Average Observed Mortality Rate by Procedure Type", 
+       x="Procedure Type", 
+       y="Average Observed Mortality Rate")+ 
+      theme_minimal()
+```
+
+
