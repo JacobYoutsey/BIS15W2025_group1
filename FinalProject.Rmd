@@ -22,7 +22,7 @@ library(shiny)
 ```{r}
 options(scipen = 999)
 
-locations <- read.csv("Health_Facility_General_Information.csv") %>% 
+locations <- read.csv("data/Health_Facility_General_Information.csv") %>% 
   clean_names()
 
 cardiac <- read_csv("data/cardiac-surgery.csv") %>% 
