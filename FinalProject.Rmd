@@ -149,6 +149,17 @@ ggmap(map1) +
   labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") 
 ```
 
+```{r}
+bbox2 <- make_bbox(long, lat, f = 0.03)
+
+map2 <- get_stadiamap(bbox2, maptype = "stamen_terrain", zoom=7)
+
+ggmap(map2)+
+  geom_point(data = cardiac,
+             aes(facility_longitude, facility_latitude),
+             na.rm = T)
+```
+
 
 ## Shiny App
 Don't mind the code and names for this, I'm testing out some stuff :D
@@ -173,7 +184,7 @@ ui <- dashboardPage(skin = "purple",
       menuItem("Cases",
                tabName = "cases",
                icon = icon("folder-open")),
-      menuItem("Hospital Map",
+      menuItem("Maps",
                tabName = "map",
                icon = icon("earth-americas"))
     )
@@ -214,7 +225,7 @@ ui <- dashboardPage(skin = "purple",
         fluidRow(
           box(plotOutput("plot3a", height = 250)), # box is a container for the plot
           box(title = "Controls", # box is a container for the controls
-              selectInput("y", 
+              selectInput("a", 
                "Select Hospital", 
                choices=c(unique(cardiac$hospital_name))
           )
@@ -223,7 +234,7 @@ ui <- dashboardPage(skin = "purple",
         fluidRow(
           box(plotOutput("plot3b", height = 250)), # box is a container for the plot
           box(title = "Controls", # box is a container for the controls
-              selectInput("y", 
+              selectInput("b", 
                "Select Hospital", 
                choices=c(unique(cardiac$hospital_name))
           )
@@ -233,14 +244,17 @@ ui <- dashboardPage(skin = "purple",
         
         tabItem(tabName = "map",
           fluidRow(
-            box(plotOutput("plot4", height = 250)),
+            box(plotOutput("plot4a", height = 250)),
             box(title = "Controls",
-                selectInput("z",
+                selectInput("m",
                             "Select Region",
                              choices = c(unique(cardiac$region))
           
           )
           )
+          ),
+          fluidRow(
+            box(plotOutput("plot4b", height = 450))
           )
           )
           )
@@ -271,6 +285,7 @@ server <- function(input, output, session) {
     output$plot3a <- renderPlot({
     
     sites_per_year %>% 
+      filter(hospital_name == input$a) %>% 
       group_by(year_of_hospital_discharge) %>% 
       summarize(total_cases_a = sum(number_of_cases)) %>% 
       ggplot(aes_string(x="year_of_hospital_discharge", y = "total_cases_a"))+
@@ -287,6 +302,7 @@ server <- function(input, output, session) {
   output$plot3b <- renderPlot({
     
     sites_with_ranges %>% 
+      filter(hospital_name == input$b) %>% 
       group_by(year_of_hospital_discharge) %>% 
       summarize(total_cases_b = sum(number_of_cases)) %>% 
       ggplot(aes_string(x="year_of_hospital_discharge", y = "total_cases_b"))+
@@ -296,6 +312,25 @@ server <- function(input, output, session) {
            x= "Year Range", 
            y= "Number of Cases")+
       theme_light(base_size = 14)
+    
+  })
+  
+  output$plot4a <- renderPlot({
+    
+      ggmap(map2)+
+      geom_point(data = cardiac,
+             aes(facility_longitude, facility_latitude),
+             na.rm = T) #trying to use the select input
+    
+  })
+  
+  output$plot4b <- renderPlot({
+    
+    ggmap(map1) + 
+    geom_point(data = cardiac, 
+               aes(facility_longitude, facility_latitude, size = number_of_cases),
+               na.rm = T)+
+    labs(x= "Longitude", y= "Latitude", title="Cardiac Locations")
     
   })
 }
