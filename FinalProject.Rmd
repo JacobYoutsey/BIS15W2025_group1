@@ -29,6 +29,20 @@ cardiac <- read_csv("data/cardiac-surgery.csv") %>%
   clean_names()
 ```
 
+```{r}
+#COMPARING NUMBER OF TOTAL PROCEDURES WITH AVERAGE MORTALITY RATE
+total_cases <- cardiac %>% 
+  group_by(facility_id) %>% 
+  summarize(total_procedures = sum(number_of_cases), avg_mortality = mean(observed_mortality_rate)) %>%
+  ggplot(aes(x = total_procedures, y = avg_mortality))+
+  geom_point(color = "olivedrab") +
+  labs(title = "Average Mortality Rate compared with Procedure Numbers ",
+       x = "Total Number of Procedure",
+       y = "Mortality Rate")+
+  theme(axis.text.y = element_text(angle = 0, hjust = 1, size = 5))
+total_cases
+```
+
 
 ```{r}
 locations <- locations %>% 
