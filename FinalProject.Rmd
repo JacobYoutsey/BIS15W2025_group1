@@ -145,7 +145,7 @@ map1 <- get_stadiamap(bbox, maptype = "stamen_terrain", zoom=7) #Make ur basemap
 ggmap(map1)
 
 ggmap(map1) + 
-  geom_point(data = cardiac, aes(facility_longitude, facility_latitude, size = number_of_cases)) + #WE just add the chart in without using ggplot! 
+  geom_point(data = cardiac, aes(facility_longitude, facility_latitude, size = number_of_cases, color = number_of_cases)) + #WE just add the chart in without using ggplot! 
   labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") 
 ```
 
@@ -198,12 +198,19 @@ ui <- dashboardPage(skin = "purple",
       ## First tab content    
       tabItem(tabName = "dashboard",
         fluidRow(
-          box(plotOutput("plot1", height = 250)), # box is a container for the plot
+          box(plotOutput("plot1a", height = 250)), # box is a container for the plot
           box(title = "Controls", # box is a container for the controls
               selectInput("region", 
                           "Select Region of Interest:", 
                           choices=unique(cardiac$region))
           )
+          ),
+        fluidRow(
+          box(plotOutput("plot1b", height = 250)),
+          box(title = "Controls",
+              selectInput("year",
+                          "Select Year of Interest:",
+                          choices = unique(cardiac$year_of_hospital_discharge)))
           )
           ),
 
@@ -265,11 +272,19 @@ server <- function(input, output, session) {
   
   session$onSessionEnded(stopApp)
 
-  output$plot1 <- renderPlot({
+  output$plot1a <- renderPlot({
 
     cardiac %>%
       filter(region == input$region) %>%
-      ggplot(aes(x = observed_mortality_rate)) + 
+      ggplot(aes(x = observed_mortality_rate))+ 
+      geom_density(color = "black", fill = "steelblue", alpha = 0.6)
+  })
+  
+  output$plot1b <- renderPlot({
+
+    cardiac %>%
+      filter(year_of_hospital_discharge == input$year) %>%
+      ggplot(aes(x = observed_mortality_rate))+ 
       geom_density(color = "black", fill = "steelblue", alpha = 0.6)
   })
   
@@ -328,7 +343,7 @@ server <- function(input, output, session) {
     
     ggmap(map1) + 
     geom_point(data = cardiac, 
-               aes(facility_longitude, facility_latitude, size = number_of_cases),
+               aes(facility_longitude, facility_latitude, size = number_of_cases, color = number_of_cases),
                na.rm = T)+
     labs(x= "Longitude", y= "Latitude", title="Cardiac Locations")
     
