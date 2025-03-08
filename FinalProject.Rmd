@@ -272,8 +272,8 @@ server <- function(input, output, session) {
     
     sites_per_year %>% 
       group_by(year_of_hospital_discharge) %>% 
-      summarize(total_cases = sum(number_of_cases)) %>% 
-      ggplot(aes_string(x="year_of_hospital_discharge", y = "total_cases"))+
+      summarize(total_cases_a = sum(number_of_cases)) %>% 
+      ggplot(aes_string(x="year_of_hospital_discharge", y = "total_cases_a"))+
       coord_flip()+
       geom_col(alpha=0.8, color="black", fill = "steelblue")+
       labs(title = "Number of Cases per Year",
