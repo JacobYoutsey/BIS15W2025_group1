@@ -1,4 +1,15 @@
-## Load the libraries
+---
+title: "Final Project"
+output: html_document
+date: "`r Sys.Date()`"
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load the Libraries
 ```{r message=FALSE, warning=FALSE}
 library(tidyverse)
 library(janitor)
