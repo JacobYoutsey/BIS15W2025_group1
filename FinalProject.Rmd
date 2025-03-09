@@ -1,15 +1,3 @@
----
-title: "Final Project"
-output: html_document
-date: "`r Sys.Date()`"
-
----
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-
 ## Load the libraries
 ```{r message=FALSE, warning=FALSE}
 library(tidyverse)
@@ -17,20 +5,62 @@ library(janitor)
 library(naniar)
 library(ggmap)
 library(shiny)
+library("tidyverse")
+library("naniar")
+library("janitor")
+library("stringr")
+library(tidyverse)
+library(janitor)
+library(naniar)
+library(tidyverse)
+library(skimr)
+library(janitor)
+library(palmerpenguins)
+library(gtools)
+library(RColorBrewer)
+library(paletteer)
+library(ggthemes)
 ```
 
 ```{r}
 options(scipen = 999)
-```
 
-## Load the Data
-```{r}
 locations <- read.csv("Health_Facility_General_Information.csv") %>% 
   clean_names()
 
 cardiac <- read_csv("cardiac-surgery.csv") %>% 
-  clean_names()
+  clean_names() %>% 
+    filter(facility_id!=0)
 ```
+
+```{r}
+#COMPARING NUMBER OF TOTAL PROCEDURES WITH AVERAGE MORTALITY RATE Per procedure
+total_cases <- cardiac %>% 
+  group_by(facility_id, procedure) %>% 
+  summarize(total_procedures = sum(number_of_cases), avg_mortality = mean(observed_mortality_rate)) %>%
+  ggplot(aes(x = total_procedures, y = avg_mortality))+
+  geom_point(color = "olivedrab") +
+  labs(title = "Average Mortality Rate compared with Procedure Numbers ",
+       x = "Total Number of Procedures",
+       y = "Mortality Rate")+
+  theme(axis.text.y = element_text(angle = 0, hjust = 1, size = 5))+theme_classic()+facet_wrap(~procedure)+scale_x_log10()+geom_smooth(method=lm, se=F)
+total_cases
+
+
+
+#COMPARING NUMBER OF TOTAL PROCEDURES WITH AVERAGE MORTALITY RATE
+
+cardiac %>% 
+  group_by(facility_id, procedure) %>% 
+  summarize(total_procedures = sum(number_of_cases), avg_mortality = mean(observed_mortality_rate)) %>%
+  ggplot(aes(x = total_procedures, y = avg_mortality))+
+  geom_point(color = "olivedrab") +
+  labs(title = "Average Mortality Rate compared with Procedure Numbers ",
+       x = "Total Number of Procedures",
+       y = "Mortality Rate")+
+  theme(axis.text.y = element_text(angle = 0, hjust = 1, size = 5))+theme_classic()+scale_x_log10()+geom_smooth(method=lm, se=F)
+```
+
 
 ```{r}
 locations <- locations %>% 
@@ -41,21 +71,115 @@ locations <- locations %>%
 ```{r}
 cardiac <- left_join(cardiac, locations, by="facility_id")
 ```
+Map:
+```{r}
+#Overall deaths for all years:
 
-## Cleaning the Data
+lat <- c(40.58, 44.70) #we got tehse values from summary above
+long <- c(-78.87, -72.98)
+bbox <- make_bbox(long, lat, f = 0.03)
+
+maptotal <- get_stadiamap(bbox, maptype = "stamen_terrain", zoom=7) #Make ur basemap, there are other styles which you could find from this link, https://docs.stadiamaps.com/themes/
+
+x <- cardiac %>% 
+  arrange(hospital_name) %>% 
+  group_by(facility_id, hospital_name, facility_latitude, facility_longitude) %>% 
+  summarise(number_of_cases=sum(number_of_cases), average_moratality_rate=mean(observed_mortality_rate), .groups = 'keep') %>% 
+  mutate(total_deaths=average_moratality_rate/100*number_of_cases)
+
+ggmap(maptotal) + 
+  geom_point(data = x, aes(facility_longitude, facility_latitude)) + labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") 
+
+register_stadiamaps("e2de824a-0995-4a51-915c-33c14c061e7b", write = FALSE) 
+cardiac %>%  #GET MAX LAT AND LON FROM CODE BELOW!!! EASY MAKES SENSE
+  select(facility_longitude, facility_latitude) %>% 
+  summary()
+
+
+#For number of cases
+ggmap(maptotal) + 
+  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = number_of_cases)) + #WE just add the chart in without using ggplot! 
+  labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") 
+
+#For moratlliry rate
+
+ggmap(maptotal) + 
+  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = average_moratality_rate)) + #WE just add the chart in without using ggplot! 
+  labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") 
+
+#For total deaths
+ggmap(maptotal) + 
+  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = total_deaths)) + #WE just add the chart in without using ggplot! 
+  labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") 
+```
+```{r}
+#Zoom NYC:
+lat1 <- c(40.58, 41.2) #we got tehse values from summary above
+long1 <- c(-74.5, -72.98)
+bbox1 <- make_bbox(long1, lat1, f = 0.03)
+
+mapnyc <- get_stadiamap(bbox1, maptype = "stamen_terrain", zoom=8) 
+
+
+#NYC Rate of mortaility
+ggmap(mapnyc) + 
+  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = average_moratality_rate)) + 
+  labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") #colour??
+
+#NYC Total Cases
+ggmap(mapnyc) + 
+  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = number_of_cases)) + 
+  labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") #colour??
+
+#NYC total deaths
+ggmap(mapnyc) + 
+  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = total_deaths)) + 
+  labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") #colour??
+
+```
+
+
+
+## Load the Data
+```{r}
+cardiac %>% 
+  group_by(facility_id) %>% 
+  summarise(mean_observed_mortality=mean(observed_mortality_rate))
+
+cardiac %>% 
+  group_by(facility_id) %>% 
+  summarise(mean_observed_mortality=mean(observed_mortality_rate)) %>% 
+  summarise(std=sd(mean_observed_mortality), mean_observed_mortality=mean(mean_observed_mortality), minmumum=min(mean_observed_mortality), maximum=max(mean_observed_mortality)) #Idk why this did not work.
+
+
+x %>% 
+  ggplot(aes(x=average_moratality_rate, y=total_deaths))+geom_point()
+
+x %>% 
+  ggplot(aes(x=number_of_cases, y=total_deaths))+geom_point()+geom_smooth(method=lm, se=F)
+```
 
 ```{r}
-cardiac <- merged_data_set %>% 
+
+```
+
+## Cleaning the Data
+```{r}
+
+```
+
+```{r}
+cardiac <- cardiac %>% 
   mutate(across(everything(), tolower))
 ```
 
 ```{r}
-merged_data_set <- merged_data_set %>%
+cardiac <- cardiac %>%
   mutate(across(everything(), tolower)) %>% 
   mutate(across(everything(), ~ str_replace_all((.), " ", "_"))) %>% 
   mutate(across(everything(), ~ str_replace_all((.), "__", "_"))) %>% 
-  mutate(across(-"Year of Hospital Discharge", ~ str_remove((.), "-")))
-merged_data_set
+  mutate(across(-"year_of_hospital_discharge", ~ str_remove((.), "-"))) %>% 
+  mutate(across(number_of_cases:risk_adjusted_mortality_rate, as.numeric))
 ```
 
 Have to separate the data, as some of them are over a range of a couple of years, some of them are year by year
@@ -105,26 +229,40 @@ sites_with_ranges %>%
 
 How has the mortality rate changed for cardiac surgery over time in each region?
 ```{r}
-#I'll come back to this later if I figure out the year stuff but feel free to take a crack at it :)
+#I'll come back to this later if I figure out the year stuff but feel free to take a crack at it :). This is mean observed Rate 
 sites_per_year %>%
-  ggplot(aes(x = observed_mortality_rate, y = year_of_hospital_discharge))+
-  geom_col(color = "steelblue") + geom_smooth(method = lm, se= TRUE) + 
+  group_by(year_of_hospital_discharge) %>% 
+  summarize(observed_mortality_rate=mean(observed_mortality_rate)) %>% 
+  ggplot(aes(x =year_of_hospital_discharge, y = observed_mortality_rate))+
+  geom_col(color = "steelblue", na.rm = T) + geom_smooth(method = lm, se= TRUE) + 
   labs(title = "Regional Cardiac Surgery Morality Rates",
        x = "Year of Hospital Discharge",
-       y = "Observed Mortality Rate")
+       y = "Mean Observed Mortality Rate")
 
 sites_with_ranges %>%
+    group_by(year_of_hospital_discharge) %>% 
+  summarize(observed_mortality_rate=mean(observed_mortality_rate)) %>% 
   ggplot(aes(x = observed_mortality_rate, y = year_of_hospital_discharge))+
   geom_col(color = "steelblue") + geom_smooth(method = lm, se= TRUE) + 
   labs(title = "Regional Cardiac Surgery Morality Rates",
-       x = "Year of Hospital Discharge",
-       y = "Observed Mortality Rate")
+       x = "Mean Observed Mortality Rate",
+       y = "Year of Hospital Discharge")
+```
+```{r}
+
 ```
 
 
 How does the expected mortality rate compare to the observed mortality rate?
 ```{r}
-#I don't know which graph to plot for this one but if you can figure it out that would be great. I was thinking maybe scatter but I don't know for sure
+#I don't know which graph to plot for this one but if you can figure it out that would be great. I was thinking maybe scatter but I don't know for sure. I THINK SCATTER IS A GREAT CHOICE BUT IDk why we need two because they are still the same concept... my opinion is cardiac below:
+
+cardiac %>%
+  ggplot(aes(x = expected_mortality_rate, y = observed_mortality_rate))+
+  geom_point(color = "steelblue") + geom_smooth(method = lm, se= TRUE) + 
+  labs(title = "Expected vs Observed Mortality Rate",
+       x = "Expected Mortality",
+       y = "Observed Mortality")
 
 sites_per_year %>%
   ggplot(aes(x = expected_mortality_rate, y = observed_mortality_rate))+
@@ -157,45 +295,13 @@ cardiac %>%
   ggplot(aes(x = reorder(region, avg_mortality), y = avg_mortality))+
   geom_col(color = "black", fill = "lightpink")+
   coord_flip()+
-  labs(title = "Average Observed Mortality Rate per Region",
+  labs(title = "Average Observed Mortality Rate Per Region",
        x = "Region",
        y = "Mortality Rate")+
   theme_light(base_size = 12)
 ```
 
-```{r}
-#COMPARING NUMBER OF TOTAL PROCEDURES WITH AVERAGE MORTALITY RATE
-total_cases <- cardiac %>% 
-  group_by(facility_id) %>% 
-  summarize(total_procedures = sum(number_of_cases), avg_mortality = mean(observed_mortality_rate)) %>%
-  ggplot(aes(x = total_procedures, y = avg_mortality))+
-  geom_point(color = "olivedrab") +
-  labs(title = "Average Mortality Rate compared with Procedure Numbers ",
-       x = "Total Number of Procedure",
-       y = "Mortality Rate")+
-  theme(axis.text.y = element_text(angle = 0, hjust = 1, size = 5))
-total_cases
-```
 
-Map:
-```{r}
-register_stadiamaps("e2de824a-0995-4a51-915c-33c14c061e7b", write = FALSE) 
-cardiac %>%  #GET MAX LAT AND LON FROM CODE BELOW!!! EASY MAKES SENSE
-  select(facility_longitude, facility_latitude) %>% 
-  summary()
-
-lat <- c(40.58, 44.70) #we got tehse values from summary above
-long <- c(-78.87, -72.98)
-bbox <- make_bbox(long, lat, f = 0.03)
-
-map1 <- get_stadiamap(bbox, maptype = "stamen_terrain", zoom=7) #Make ur basemap, there are other styles which you could find from this link, https://docs.stadiamaps.com/themes/
-
-ggmap(map1)
-
-ggmap(map1) + 
-  geom_point(data = cardiac, aes(facility_longitude, facility_latitude, size = number_of_cases)) + #WE just add the chart in without using ggplot! 
-  labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") 
-```
 
 
 ## Shiny App
