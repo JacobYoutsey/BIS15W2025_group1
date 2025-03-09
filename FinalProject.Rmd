@@ -124,7 +124,18 @@ cardiac %>%
 ```
 
 ```{r}
-cardiac %>% 
+sites_per_year %>% 
+  group_by(procedure) %>% 
+  summarize(avg_mortality = mean(observed_mortality_rate)) %>% 
+  ggplot(aes(x = reorder(procedure, avg_mortality), y = avg_mortality))+
+  geom_col(color = "black", fill = "lightblue")+
+  coord_flip()+
+  labs(title = "Average Observed Mortality Rate by Procedure",
+       x = "Procedure",
+       y = "Mortality Rate")+
+  theme_light(base_size = 12)
+
+sites_with_ranges %>% 
   group_by(procedure) %>% 
   summarize(avg_mortality = mean(observed_mortality_rate)) %>% 
   ggplot(aes(x = reorder(procedure, avg_mortality), y = avg_mortality))+
@@ -140,12 +151,39 @@ cardiac %>%
 How has the mortality rate changed for cardiac surgery over time in each region?
 ```{r}
 #I'll come back to this later if I figure out the year stuff but feel free to take a crack at it :)
+sites_per_year %>%
+  ggplot(aes(x = observed_mortality_rate, y = year_of_hospital_discharge))+
+  geom_col(color = "steelblue") + geom_smooth(method = lm, se= TRUE) + 
+  labs(title = "Regional Cardiac Surgery Morality Rates",
+       x = "Year of Hospital Discharge",
+       y = "Observed Mortality Rate")
+
+sites_with_ranges %>%
+  ggplot(aes(x = observed_mortality_rate, y = year_of_hospital_discharge))+
+  geom_col(color = "steelblue") + geom_smooth(method = lm, se= TRUE) + 
+  labs(title = "Regional Cardiac Surgery Morality Rates",
+       x = "Year of Hospital Discharge",
+       y = "Observed Mortality Rate")
 ```
 
 
 How does the expected mortality rate compare to the observed mortality rate?
 ```{r}
 #I don't know which graph to plot for this one but if you can figure it out that would be great. I was thinking maybe scatter but I don't know for sure
+
+sites_per_year %>%
+  ggplot(aes(x = expected_mortality_rate, y = observed_mortality_rate))+
+  geom_point(color = "steelblue") + geom_smooth(method = lm, se= TRUE) + 
+  labs(title = "Expected vs Observed Mortality Rate",
+       x = "Expected Mortality",
+       y = "Observed Mortality")
+
+sites_with_ranges %>%
+  ggplot(aes(x = expected_mortality_rate, y = observed_mortality_rate))+
+  geom_point(color = "steelblue") + geom_smooth(method = lm, se= TRUE) + 
+  labs(title = "Expected vs Observed Mortality Rate",
+       x = "Expected Mortality",
+       y = "Observed Mortality")
 ```
 
 
@@ -188,7 +226,6 @@ ui <- dashboardPage(skin = "olivedrab",
       menuItem("Observed Mortality Rate", 
                tabName = "dashboard", 
                icon = icon("dashboard")),
-      
       menuItem("Counts", 
                tabName = "widgets", 
                icon = icon("th")),
