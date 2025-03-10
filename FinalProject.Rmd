@@ -460,14 +460,14 @@ server <- function(input, output, session) {
   output$plot4a <- renderPlot({
     
       ggmap(maptotal) + 
-  geom_point(data = x, aes(facility_longitude, facility_latitude)) + labs(x= "Longitude", y= "Latitude", title="Cardiac Locations")
+  geom_point(data = x, aes(facility_longitude, facility_latitude, size = 2)) + labs(x= "Longitude", y= "Latitude", title="Cardiac Locations")
     
   })
   
   output$plot4b <- renderPlot({
     
     ggmap(maptotal) + 
-  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = number_of_cases)) + #WE just add the chart in without using ggplot! 
+  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = number_of_cases, size = 2)) + #WE just add the chart in without using ggplot! 
   labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") 
     
   })
@@ -475,7 +475,7 @@ server <- function(input, output, session) {
   output$plot4c <- renderPlot({
     
     ggmap(maptotal) + 
-  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = average_moratality_rate)) + #WE just add the chart in without using ggplot! 
+  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = average_moratality_rate, size = 2)) + #WE just add the chart in without using ggplot! 
   labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") 
     
   })
@@ -483,7 +483,7 @@ server <- function(input, output, session) {
   output$plot4d <- renderPlot({
     
     ggmap(maptotal) + 
-  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = total_deaths)) + #WE just add the chart in without using ggplot! 
+  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = total_deaths, size = 2)) + #WE just add the chart in without using ggplot! 
   labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") 
     
   })
@@ -491,7 +491,7 @@ server <- function(input, output, session) {
   output$plot5a <- renderPlot({
     
     ggmap(mapnyc) + 
-  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = average_moratality_rate)) + 
+  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = average_moratality_rate, size = 2.5)) + 
   labs(x= "Longitude", y= "Latitude", title="Cardiac Locations")
     
   })
@@ -499,7 +499,7 @@ server <- function(input, output, session) {
   output$plot5b <- renderPlot({
     
     ggmap(mapnyc) + 
-  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = number_of_cases)) + 
+  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = number_of_cases, size = 2.5)) + 
   labs(x= "Longitude", y= "Latitude", title="Cardiac Locations")
     
   })
@@ -507,7 +507,7 @@ server <- function(input, output, session) {
   output$plot5c <- renderPlot({
     
     ggmap(mapnyc) + 
-  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = total_deaths)) + 
+  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = total_deaths, size = 2.5)) + 
   labs(x= "Longitude", y= "Latitude", title="Cardiac Locations")
     
   })
