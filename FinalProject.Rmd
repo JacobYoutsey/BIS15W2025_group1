@@ -389,7 +389,7 @@ server <- function(input, output, session) {
       geom_density(color = "black", fill = "steelblue", alpha = 0.6)+
       labs(title = "Observed Mortality Rate Distribution by Region",
            x = "Mortality Rate",
-           y = "Proportion of NY Regions")
+           y = "Proportion of Hospitals in the Region")
   })
   
   output$plot1b <- renderPlot({
