@@ -314,13 +314,20 @@ ui <- dashboardPage(skin = "purple",
       tabItem(tabName = "widgets",
               h1(strong("Number of patients broken down by procedure type or region in New York Hospitals"), style = "font-size:20px"),
         fluidRow(
-          box(plotOutput("plot2", height = 250)), # box is a container for the plot
+          box(plotOutput("plot2a", height = 250)), # box is a container for the plot
           box(title = "Controls", # box is a container for the controls
               radioButtons("x", 
-               "Select Fill Variable", 
+               "Select Fill Variable:", 
                choices=c("region", "procedure"),
                selected="region")
           )
+          ),
+        fluidRow(
+          box(plotOutput("plot2b", height = 250)),
+          box(title = "Controls",
+              selectInput("p",
+                          "Select Year:",
+                          choices = unique(cardiac$year_of_hospital_discharge)))
           )
           ),
       
@@ -362,7 +369,6 @@ ui <- dashboardPage(skin = "purple",
             box(plotOutput("plot5a", height = 450)),
             box(plotOutput("plot5b", height = 450)),
             box(plotOutput("plot5c", height = 450))
-          
           )
           )
           )
@@ -410,7 +416,7 @@ server <- function(input, output, session) {
   })
   
   
-    output$plot2 <- renderPlot({
+    output$plot2a <- renderPlot({
     
     cardiac %>% 
       ggplot(aes_string(x="region", fill=input$x))+
@@ -418,6 +424,22 @@ server <- function(input, output, session) {
       labs(x=NULL, y=NULL, fill="Fill Variable")+theme(axis.text.x = element_text(angle=90,hjust = 1))
     
   })
+    
+    output$plot2b <- renderPlot({
+    
+    cardiac %>% 
+      filter(year_of_hospital_discharge == input$p) %>% 
+      group_by(procedure) %>% 
+      summarize(avg_mortality = mean(observed_mortality_rate)) %>% 
+      ggplot(aes(x = reorder(procedure, avg_mortality), y = avg_mortality))+
+      geom_col(color = "black", fill = "lightblue")+
+      coord_flip()+
+      labs(title = "Average Observed Mortality Rate by Procedure",
+          x = "Procedure",
+          y = "Mortality Rate")+
+      theme_light(base_size = 12)
+      
+    })
     
     output$plot3a <- renderPlot({
     
@@ -456,14 +478,14 @@ server <- function(input, output, session) {
   output$plot4a <- renderPlot({
     
       ggmap(maptotal) + 
-  geom_point(data = x, aes(facility_longitude, facility_latitude, size = 2)) + labs(x= "Longitude", y= "Latitude", title="Cardiac Locations")
+  geom_point(data = x, aes(facility_longitude, facility_latitude)) + labs(x= "Longitude", y= "Latitude", title="Cardiac Locations")
     
   })
   
   output$plot4b <- renderPlot({
     
     ggmap(maptotal) + 
-  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = number_of_cases, size = 2)) + #WE just add the chart in without using ggplot! 
+  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = number_of_cases)) + #WE just add the chart in without using ggplot! 
   labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") 
     
   })
@@ -471,7 +493,7 @@ server <- function(input, output, session) {
   output$plot4c <- renderPlot({
     
     ggmap(maptotal) + 
-  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = average_moratality_rate, size = 2)) + #WE just add the chart in without using ggplot! 
+  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = average_moratality_rate)) + #WE just add the chart in without using ggplot! 
   labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") 
     
   })
@@ -479,7 +501,7 @@ server <- function(input, output, session) {
   output$plot4d <- renderPlot({
     
     ggmap(maptotal) + 
-  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = total_deaths, size = 2)) + #WE just add the chart in without using ggplot! 
+  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = total_deaths)) + #WE just add the chart in without using ggplot! 
   labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") 
     
   })
@@ -487,7 +509,7 @@ server <- function(input, output, session) {
   output$plot5a <- renderPlot({
     
     ggmap(mapnyc) + 
-  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = average_moratality_rate, size = 2.5)) + 
+  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = average_moratality_rate)) + 
   labs(x= "Longitude", y= "Latitude", title="Cardiac Locations")
     
   })
@@ -495,7 +517,7 @@ server <- function(input, output, session) {
   output$plot5b <- renderPlot({
     
     ggmap(mapnyc) + 
-  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = number_of_cases, size = 2.5)) + 
+  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = number_of_cases)) + 
   labs(x= "Longitude", y= "Latitude", title="Cardiac Locations")
     
   })
@@ -503,7 +525,7 @@ server <- function(input, output, session) {
   output$plot5c <- renderPlot({
     
     ggmap(mapnyc) + 
-  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = total_deaths, size = 2.5)) + 
+  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = total_deaths)) + 
   labs(x= "Longitude", y= "Latitude", title="Cardiac Locations")
     
   })
