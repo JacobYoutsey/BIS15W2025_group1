@@ -271,7 +271,10 @@ ui <- dashboardPage(skin = "purple",
                icon = icon("folder-open")),
       menuItem("Maps",
                tabName = "map",
-               icon = icon("earth-americas"))
+               icon = icon("earth-americas")),
+      menuItem("NYC Maps",
+               tabName = "nyc",
+               icon = icon("hotel"))
     )
     ),
   
@@ -345,18 +348,26 @@ ui <- dashboardPage(skin = "purple",
           ),
         
         tabItem(tabName = "map",
-                h1(strong("These are maps addressing different scenarios based on our dataset."), style = "font-size:20px"),
+                h1(strong("These are overall maps addressing different scenarios based on our dataset."), style = "font-size:20px"),
           fluidRow(
-            box(plotOutput("plot4a", height = 250)),
+            box(plotOutput("plot4a", height = 450)),
+            box(plotOutput("plot4b", height = 450)),
+            box(plotOutput("plot4c", height = 450)),
+            box(plotOutput("plot4d", height = 450))
+          )
+          ),
+      tabItem(tabName = "nyc",
+              h1(strong("These are maps zoomed in on New York City addressing different scenarios based on our dataset."), style = "font-size:20px"),
+              fluidRow(
+            box(plotOutput("plot5a", height = 450)),
           
           ),
           fluidRow(
-            box(plotOutput("plot4b", height = 350))
+            box(plotOutput("plot5b", height = 450))
           ),
           fluidRow(
-            box(plotOutput("plot4c", height = 450))
+            box(plotOutput("plot5c", height = 450))
           ),
-          fluidRow(plotOutput("plot4d", height = 500))
           )
           )
           )
@@ -474,8 +485,32 @@ server <- function(input, output, session) {
     ggmap(maptotal) + 
   geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = total_deaths)) + #WE just add the chart in without using ggplot! 
   labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") 
+    
   })
   
+  output$plot5a <- renderPlot({
+    
+    ggmap(mapnyc) + 
+  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = average_moratality_rate)) + 
+  labs(x= "Longitude", y= "Latitude", title="Cardiac Locations")
+    
+  })
+  
+  output$plot5b <- renderPlot({
+    
+    ggmap(mapnyc) + 
+  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = number_of_cases)) + 
+  labs(x= "Longitude", y= "Latitude", title="Cardiac Locations")
+    
+  })
+  
+  output$plot5c <- renderPlot({
+    
+    ggmap(mapnyc) + 
+  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = total_deaths)) + 
+  labs(x= "Longitude", y= "Latitude", title="Cardiac Locations")
+    
+  })
 }
 
 shinyApp(ui, server)
