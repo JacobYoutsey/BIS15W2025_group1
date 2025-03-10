@@ -360,14 +360,10 @@ ui <- dashboardPage(skin = "purple",
               h1(strong("These are maps zoomed in on New York City addressing different scenarios based on our dataset."), style = "font-size:20px"),
               fluidRow(
             box(plotOutput("plot5a", height = 450)),
-          
-          ),
-          fluidRow(
-            box(plotOutput("plot5b", height = 450))
-          ),
-          fluidRow(
+            box(plotOutput("plot5b", height = 450)),
             box(plotOutput("plot5c", height = 450))
-          ),
+          
+          )
           )
           )
           )
