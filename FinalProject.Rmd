@@ -160,8 +160,9 @@ cardiac %>%
   theme_light(base_size = 12)
 ```
 
+
+COMPARING NUMBER OF TOTAL PROCEDURES WITH AVERAGE MORTALITY RATE
 ```{r}
-#COMPARING NUMBER OF TOTAL PROCEDURES WITH AVERAGE MORTALITY RATE
 total_cases <- cardiac %>% 
   group_by(facility_id) %>% 
   summarize(total_procedures = sum(number_of_cases), avg_mortality = mean(observed_mortality_rate)) %>%
@@ -170,7 +171,8 @@ total_cases <- cardiac %>%
   labs(title = "Average Mortality Rate compared with Procedure Numbers ",
        x = "Total Number of Procedure",
        y = "Mortality Rate")+
-  theme(axis.text.y = element_text(angle = 0, hjust = 1, size = 5))
+  theme(axis.text.y = element_text(angle = 0, hjust = 1, size = 5))+
+  scale_x_log10()+geom_smooth(method=lm, se=F)
 total_cases
 ```
 
@@ -204,7 +206,7 @@ ggmap(maptotal) +
   geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = number_of_cases)) + #WE just add the chart in without using ggplot! 
   labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") 
 
-#For moratlliry rate
+#For mortality rate
 
 ggmap(maptotal) + 
   geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = average_moratality_rate)) + #WE just add the chart in without using ggplot! 
@@ -237,6 +239,7 @@ ggmap(mapnyc) +
   geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = total_deaths)) + 
   labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") #colour??
 ```
+
 
 ## Shiny App
 
@@ -329,8 +332,8 @@ ui <- dashboardPage(skin = "purple",
           box(plotOutput("plot3b", height = 250)), # box is a container for the plot
           box(title = "Controls", # box is a container for the controls
               selectInput("b", 
-               "Select Hospital", 
-               choices=c(unique(cardiac$hospital_name))
+               "Select Year:", 
+               choices=c(unique(cardiac$year_of_hospital_discharge))
           )
           )
           )
@@ -384,7 +387,7 @@ server <- function(input, output, session) {
   
   output$plot1c <- renderPlot({
 
-    sites_per_year %>% 
+    cardiac %>% 
       filter(hospital_name == input$hospital) %>% 
       group_by(year_of_hospital_discharge, hospital_name) %>% 
       summarize(avg_mortality = mean(observed_mortality_rate), .groups = 'keep') %>% 
@@ -408,7 +411,7 @@ server <- function(input, output, session) {
     
     output$plot3a <- renderPlot({
     
-    sites_per_year %>% 
+    cardiac %>% 
       filter(hospital_name == input$a) %>% 
       group_by(year_of_hospital_discharge) %>% 
       summarize(total_cases_a = sum(number_of_cases)) %>% 
@@ -425,17 +428,19 @@ server <- function(input, output, session) {
     
   output$plot3b <- renderPlot({
     
-    sites_with_ranges %>% 
-      filter(hospital_name == input$b) %>% 
-      group_by(year_of_hospital_discharge) %>% 
-      summarize(total_cases_b = sum(number_of_cases)) %>% 
-      ggplot(aes_string(x="year_of_hospital_discharge", y = "total_cases_b"))+
-      coord_flip()+
-      geom_col(alpha=0.8, color="black", fill = "lightblue")+
-      labs(title = "Number of Cases per Year Range",
-           x= "Year Range", 
-           y= "Number of Cases")+
-      theme_light(base_size = 14)
+    cardiac %>% 
+      filter(year_of_hospital_discharge == input$b) %>% 
+      group_by(facility_id, procedure) %>% 
+      summarize(total_procedures = sum(number_of_cases), avg_mortality = mean(observed_mortality_rate)) %>%
+      ggplot(aes(x = total_procedures, y = avg_mortality))+
+      geom_point(color = "olivedrab") +
+      labs(title = "Average Mortality Rate compared with Procedure Numbers ",
+       x = "Total Number of Procedures",
+       y = "Mortality Rate")+
+     theme(axis.text.y = element_text(angle = 0, hjust = 1, size = 5))+
+     theme_classic()+
+     scale_x_log10()+
+     geom_smooth(method=lm, se=F)
     
   })
   
