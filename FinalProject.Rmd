@@ -135,8 +135,16 @@ sites_with_ranges %>%
        x = "Mean Observed Mortality Rate",
        y = "Year of Hospital Discharge")
 ```
-```{r}
 
+
+```{r}
+sites_per_year %>% 
+  filter(hospital_name == "Albany Medical Center") %>% 
+  group_by(year_of_hospital_discharge, hospital_name) %>% 
+  summarize(avg_mortality = mean(observed_mortality_rate), .groups = 'keep') %>% 
+  ggplot(aes(x = as.factor(year_of_hospital_discharge), y = avg_mortality, group = hospital_name))+
+  geom_line()+
+  geom_point()
 ```
 
 
@@ -307,7 +315,7 @@ ggmap(mapnyc) +
 
 
 ## Shiny App
-Don't mind the code and names for this, I'm testing out some stuff :D
+
 ```{r}
 library(shinydashboard)
 
@@ -356,6 +364,13 @@ ui <- dashboardPage(skin = "purple",
               selectInput("year",
                           "Select Year of Interest:",
                           choices = unique(cardiac$year_of_hospital_discharge)))
+          ),
+        fluidRow(
+          box(plotOutput("plot1c", height = 250)),
+          box(title = "Controls",
+              selectInput("hospital",
+                          "Select Hospital of Interest:",
+                          choices = unique(cardiac$hospital_name)))
           )
           ),
 
@@ -432,6 +447,18 @@ server <- function(input, output, session) {
       ggplot(aes(x = observed_mortality_rate))+ 
       geom_density(color = "black", fill = "steelblue", alpha = 0.6)
   })
+  
+  output$plot1c <- renderPlot({
+
+    sites_per_year %>% 
+      filter(hospital_name == input$hospital) %>% 
+      group_by(year_of_hospital_discharge, hospital_name) %>% 
+      summarize(avg_mortality = mean(observed_mortality_rate), .groups = 'keep') %>% 
+      ggplot(aes(x = as.factor(year_of_hospital_discharge), y = avg_mortality, group = hospital_name))+
+      geom_line()+
+      geom_point()
+  })
+  
   
     output$plot2 <- renderPlot({
     
