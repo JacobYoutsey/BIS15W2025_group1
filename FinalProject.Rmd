@@ -63,6 +63,35 @@ cardiac <- cardiac %>%
   filter(str_detect(year_of_hospital_discharge, "-", negate = TRUE))
 ```
 
+Map Data:
+```{r}
+register_stadiamaps("e2de824a-0995-4a51-915c-33c14c061e7b", write = FALSE) 
+cardiac %>%  #GET MAX LAT AND LON FROM CODE BELOW!!! EASY MAKES SENSE
+  select(facility_longitude, facility_latitude) %>% 
+  summary()
+
+lat <- c(40.58, 44.70) #we got tehse values from summary above
+long <- c(-78.87, -72.98)
+bbox <- make_bbox(long, lat, f = 0.03)
+
+maptotal <- get_stadiamap(bbox, maptype = "stamen_terrain", zoom=7) #Make ur basemap, there are other styles which you could find from this link, https://docs.stadiamaps.com/themes/
+
+x <- cardiac %>% 
+  arrange(hospital_name) %>% 
+  group_by(facility_id, hospital_name, facility_latitude, facility_longitude) %>% 
+  summarise(number_of_cases=sum(number_of_cases), average_moratality_rate=mean(observed_mortality_rate), .groups = 'keep') %>% 
+  mutate(total_deaths=average_moratality_rate/100*number_of_cases) %>% 
+  mutate(facility_latitude=as.numeric(facility_latitude), facility_longitude=as.numeric(facility_longitude))
+```
+
+```{r}
+lat1 <- c(40.58, 41.2) #we got tehse values from summary above
+long1 <- c(-74.5, -72.98)
+bbox1 <- make_bbox(long1, lat1, f = 0.03)
+
+mapnyc <- get_stadiamap(bbox1, maptype = "stamen_terrain", zoom=8) 
+```
+
 ## Cleaning the Data
 
 ```{r}
@@ -180,24 +209,7 @@ Map:
 ```{r}
 #Overall deaths for all years:
 
-register_stadiamaps("e2de824a-0995-4a51-915c-33c14c061e7b", write = FALSE) 
-cardiac %>%  #GET MAX LAT AND LON FROM CODE BELOW!!! EASY MAKES SENSE
-  select(facility_longitude, facility_latitude) %>% 
-  summary()
-
-lat <- c(40.58, 44.70) #we got tehse values from summary above
-long <- c(-78.87, -72.98)
-bbox <- make_bbox(long, lat, f = 0.03)
-
-maptotal <- get_stadiamap(bbox, maptype = "stamen_terrain", zoom=7) #Make ur basemap, there are other styles which you could find from this link, https://docs.stadiamaps.com/themes/
-
-x <- cardiac %>% 
-  arrange(hospital_name) %>% 
-  group_by(facility_id, hospital_name, facility_latitude, facility_longitude) %>% 
-  summarise(number_of_cases=sum(number_of_cases), average_moratality_rate=mean(observed_mortality_rate), .groups = 'keep') %>% 
-  mutate(total_deaths=average_moratality_rate/100*number_of_cases) %>% 
-  mutate(facility_latitude=as.numeric(facility_latitude), facility_longitude=as.numeric(facility_longitude))
-
+#All hospital map
 ggmap(maptotal) + 
   geom_point(data = x, aes(facility_longitude, facility_latitude)) + labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") 
 
@@ -216,13 +228,6 @@ ggmap(maptotal) +
 ggmap(maptotal) + 
   geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = total_deaths)) + #WE just add the chart in without using ggplot! 
   labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") 
-
-#Zoom NYC:
-lat1 <- c(40.58, 41.2) #we got tehse values from summary above
-long1 <- c(-74.5, -72.98)
-bbox1 <- make_bbox(long1, lat1, f = 0.03)
-
-mapnyc <- get_stadiamap(bbox1, maptype = "stamen_terrain", zoom=8) 
 
 #NYC Rate of mortaility
 ggmap(mapnyc) + 
@@ -343,17 +348,15 @@ ui <- dashboardPage(skin = "purple",
                 h1(strong("These are maps addressing different scenarios based on our dataset."), style = "font-size:20px"),
           fluidRow(
             box(plotOutput("plot4a", height = 250)),
-            box(title = "Controls",
-                selectInput("m",
-                            "Select Region",
-                             choices = c(unique(cardiac$region))
           
-          )
-          )
           ),
           fluidRow(
-            box(plotOutput("plot4b", height = 450))
-          )
+            box(plotOutput("plot4b", height = 350))
+          ),
+          fluidRow(
+            box(plotOutput("plot4c", height = 450))
+          ),
+          fluidRow(plotOutput("plot4d", height = 500))
           )
           )
           )
@@ -446,22 +449,34 @@ server <- function(input, output, session) {
   
   output$plot4a <- renderPlot({
     
-      ggmap(map2)+
-      geom_point(data = cardiac,
-             aes(facility_longitude, facility_latitude),
-             na.rm = T) #trying to use the select input
+      ggmap(maptotal) + 
+  geom_point(data = x, aes(facility_longitude, facility_latitude)) + labs(x= "Longitude", y= "Latitude", title="Cardiac Locations")
     
   })
   
   output$plot4b <- renderPlot({
     
-    ggmap(map1) + 
-    geom_point(data = cardiac, 
-               aes(facility_longitude, facility_latitude, size = number_of_cases, color = number_of_cases),
-               na.rm = T)+
-    labs(x= "Longitude", y= "Latitude", title="Cardiac Locations")
+    ggmap(maptotal) + 
+  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = number_of_cases)) + #WE just add the chart in without using ggplot! 
+  labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") 
     
   })
+  
+  output$plot4c <- renderPlot({
+    
+    ggmap(maptotal) + 
+  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = average_moratality_rate)) + #WE just add the chart in without using ggplot! 
+  labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") 
+    
+  })
+  
+  output$plot4d <- renderPlot({
+    
+    ggmap(maptotal) + 
+  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = total_deaths)) + #WE just add the chart in without using ggplot! 
+  labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") 
+  })
+  
 }
 
 shinyApp(ui, server)
