@@ -327,13 +327,13 @@ ui <- dashboardPage(skin = "purple",
   dashboardSidebar(
     sidebarMenu(
       
-      menuItem("Observed Mortality Rate", 
+      menuItem("Mortality Rate", 
                tabName = "dashboard", 
-               icon = icon("dashboard")),
+               icon = icon("skull")),
       
-      menuItem("Counts", 
+      menuItem("Procedures", 
                tabName = "widgets", 
-               icon = icon("th")),
+               icon = icon("stethoscope")),
       menuItem("Cases",
                tabName = "cases",
                icon = icon("folder-open")),
@@ -349,10 +349,11 @@ ui <- dashboardPage(skin = "purple",
     tabItems(
   
       ## First tab content    
-      tabItem(tabName = "dashboard",
+      tabItem(tabName = "dashboard", 
+              h1(strong("These are plots produced based on the mortality rate observed in each New York hospital based on cardiac surgery results."), style = "font-size:20px"),
         fluidRow(
-          box(plotOutput("plot1a", height = 250)), # box is a container for the plot
-          box(title = "Controls", # box is a container for the controls
+          box(plotOutput("plot1a", height = 250)), 
+          box(title = "Controls", 
               selectInput("region", 
                           "Select Region of Interest:", 
                           choices=unique(cardiac$region))
@@ -376,6 +377,7 @@ ui <- dashboardPage(skin = "purple",
 
       ## Second tab item 
       tabItem(tabName = "widgets",
+              h1(strong("These are plots produced based on which procedures, specifically which cardiac surgery procedure, were performed for each patient in New York Hospitals."), style = "font-size:20px"),
         fluidRow(
           box(plotOutput("plot2", height = 250)), # box is a container for the plot
           box(title = "Controls", # box is a container for the controls
@@ -389,6 +391,7 @@ ui <- dashboardPage(skin = "purple",
       
       ## Third tab item
       tabItem(tabName = "cases",
+              h1(strong("These are plots produced based on the number of cases of cardiac surgery performed in New York Hospitals."), style = "font-size:20px"),
         fluidRow(
           box(plotOutput("plot3a", height = 250)), # box is a container for the plot
           box(title = "Controls", # box is a container for the controls
@@ -410,6 +413,7 @@ ui <- dashboardPage(skin = "purple",
           ),
         
         tabItem(tabName = "map",
+                h1(strong("These are maps addressing different scenarios based on our dataset."), style = "font-size:20px"),
           fluidRow(
             box(plotOutput("plot4a", height = 250)),
             box(title = "Controls",
@@ -437,7 +441,10 @@ server <- function(input, output, session) {
     cardiac %>%
       filter(region == input$region) %>%
       ggplot(aes(x = observed_mortality_rate))+ 
-      geom_density(color = "black", fill = "steelblue", alpha = 0.6)
+      geom_density(color = "black", fill = "steelblue", alpha = 0.6)+
+      labs(title = "Observed Mortality Rate Distribution by Region",
+           x = "Mortality Rate",
+           y = NULL)
   })
   
   output$plot1b <- renderPlot({
@@ -445,7 +452,10 @@ server <- function(input, output, session) {
     cardiac %>%
       filter(year_of_hospital_discharge == input$year) %>%
       ggplot(aes(x = observed_mortality_rate))+ 
-      geom_density(color = "black", fill = "steelblue", alpha = 0.6)
+      geom_density(color = "black", fill = "steelblue", alpha = 0.6)+
+      labs(title = "Observed Mortality Rate Distribution by Year",
+           x = "Mortality Rate",
+           y = NULL)
   })
   
   output$plot1c <- renderPlot({
@@ -456,7 +466,10 @@ server <- function(input, output, session) {
       summarize(avg_mortality = mean(observed_mortality_rate), .groups = 'keep') %>% 
       ggplot(aes(x = as.factor(year_of_hospital_discharge), y = avg_mortality, group = hospital_name))+
       geom_line()+
-      geom_point()
+      geom_point()+
+      labs(title = "Mortality Rate Over Time",
+           x = "Year",
+           y = "Mortality Rate")
   })
   
   
