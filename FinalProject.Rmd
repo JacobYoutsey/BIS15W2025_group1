@@ -41,10 +41,10 @@ options(scipen = 999)
 ## Load the Data
 
 ```{r}
-locations <- read.csv("Health_Facility_General_Information.csv") %>% 
+locations <- read.csv("data/Health_Facility_General_Information.csv") %>% 
   clean_names()
 
-cardiac <- read_csv("cardiac-surgery.csv") %>% 
+cardiac <- read_csv("data/cardiac-surgery.csv") %>% 
   clean_names() %>% 
     filter(facility_id!=0)
 ```
