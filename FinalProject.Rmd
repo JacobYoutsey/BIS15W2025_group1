@@ -246,6 +246,8 @@ ggmap(mapnyc) +
 ```
 
 
+# For procedure tab - what to include - 1: Total number of each procedure, select for hospital, 2: Mortality rate for each procedure, select for year
+
 ## Shiny App
 
 ```{r}
