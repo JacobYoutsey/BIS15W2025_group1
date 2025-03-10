@@ -107,7 +107,7 @@ cardiac %>%
   group_by(year_of_hospital_discharge) %>% 
   summarize(observed_mortality_rate=mean(observed_mortality_rate)) %>% 
   ggplot(aes(x =year_of_hospital_discharge, y = observed_mortality_rate))+
-  geom_col(color = "steelblue", na.rm = T) + geom_smooth(method = lm, se= TRUE) + 
+  geom_col(color = "purple4", na.rm = T) + geom_smooth(method = lm, se= TRUE) + 
   labs(title = "Regional Cardiac Surgery Morality Rates",
        x = "Year of Hospital Discharge",
        y = "Mean Observed Mortality Rate")
