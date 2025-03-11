@@ -253,6 +253,22 @@ cardiac %>%
   geom_col()
 ```
 
+```{r}
+cardiac %>% 
+      group_by(region, year_of_hospital_discharge, procedure) %>% 
+      summarize(num_case = sum(number_of_cases), .groups = "drop") %>% 
+      ggplot(aes_string(x="region", y = "num_case", fill = "procedure"))+
+      geom_col(position="dodge", alpha=0.8, color="black")+
+      labs(x=NULL, y=NULL, fill="Fill Variable")+theme(axis.text.x = element_text(angle=90,hjust = 1))
+```
+
+```{r}
+cardiac %>% 
+      group_by(region) %>% 
+      mutate(num_case = sum(number_of_cases))
+```
+
+
 # For procedure tab - what to include - 1: Total number of each procedure, select for hospital, 2: Mortality rate for each procedure, select for year
 
 ## Shiny App
@@ -327,8 +343,8 @@ ui <- dashboardPage(skin = "purple",
           box(title = "Controls", # box is a container for the controls
               radioButtons("x", 
                "Select Fill Variable:", 
-               choices=c("region", "procedure"),
-               selected="region")
+               choices=c("year_of_hospital_discharge", "procedure"),
+               selected="year_of_hospital_discharge")
           )
           ),
         fluidRow(
@@ -435,8 +451,10 @@ server <- function(input, output, session) {
     output$plot2a <- renderPlot({
     
     cardiac %>% 
-      ggplot(aes_string(x="region", fill=input$x))+
-      geom_bar(position="dodge", alpha=0.8, color="black")+
+      group_by(region) %>% 
+      mutate(num_case = sum(number_of_cases)) %>% 
+      ggplot(aes(x= region, y = num_case, fill = input$x))+
+      geom_col(position="dodge", alpha=0.8, color="black")+
       labs(x=NULL, y=NULL, fill="Fill Variable")+theme(axis.text.x = element_text(angle=90,hjust = 1))
     
   })
