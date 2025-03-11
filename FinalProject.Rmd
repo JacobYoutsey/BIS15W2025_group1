@@ -244,6 +244,13 @@ ggmap(mapnyc) +
   labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") #colour??
 ```
 
+```{r}
+cardiac %>% 
+  group_by(procedure, hospital_name) %>% 
+  summarize(procedure_cases = sum(number_of_cases), .groups = 'keep') %>% 
+  ggplot(aes(x = procedure, y = procedure_cases))+
+  geom_col()
+```
 
 # For procedure tab - what to include - 1: Total number of each procedure, select for hospital, 2: Mortality rate for each procedure, select for year
 
@@ -291,7 +298,7 @@ ui <- dashboardPage(skin = "purple",
           box(plotOutput("plot1a", height = 250)), 
           box(title = "Controls", 
               selectInput("region", 
-                          "Select Region of Interest:", 
+                          "Select Region:", 
                           choices=unique(cardiac$region))
           )
           ),
@@ -299,21 +306,21 @@ ui <- dashboardPage(skin = "purple",
           box(plotOutput("plot1b", height = 250)),
           box(title = "Controls",
               selectInput("year",
-                          "Select Year of Interest:",
+                          "Select Year:",
                           choices = unique(cardiac$year_of_hospital_discharge)))
           ),
         fluidRow(
           box(plotOutput("plot1c", height = 250)),
           box(title = "Controls",
               selectInput("hospital",
-                          "Select Hospital of Interest:",
+                          "Select Hospital:",
                           choices = unique(cardiac$hospital_name)))
           )
           ),
 
       ## Second tab item 
       tabItem(tabName = "widgets",
-              h1(strong("Number of patients broken down by procedure type or region in New York Hospitals"), style = "font-size:20px"),
+              h1(strong("These are the plots observing the procedures performed in New York Hospitals"), style = "font-size:20px"),
         fluidRow(
           box(plotOutput("plot2a", height = 250)), # box is a container for the plot
           box(title = "Controls", # box is a container for the controls
@@ -329,6 +336,13 @@ ui <- dashboardPage(skin = "purple",
               selectInput("p",
                           "Select Year:",
                           choices = unique(cardiac$year_of_hospital_discharge)))
+          ),
+        fluidRow(
+          box(plotOutput("plot2c", height = 250)),
+          box(title = "Controls",
+              selectInput("h",
+                          "Select Hospital:",
+                          choices = unique(cardiac$hospital_name)))
           )
           ),
       
@@ -339,7 +353,7 @@ ui <- dashboardPage(skin = "purple",
           box(plotOutput("plot3a", height = 250)), # box is a container for the plot
           box(title = "Controls", # box is a container for the controls
               selectInput("a", 
-               "Select Hospital", 
+               "Select Hospital:", 
                choices=c(unique(cardiac$hospital_name))
           )
           )
@@ -410,7 +424,7 @@ server <- function(input, output, session) {
       summarize(avg_mortality = mean(observed_mortality_rate), .groups = 'keep') %>% 
       ggplot(aes(x = as.factor(year_of_hospital_discharge), y = avg_mortality, group = hospital_name))+
       geom_line()+
-      geom_point()+
+      geom_point(na.rm = T)+
       labs(title = "Mortality Rate Over Time",
            x = "Year",
            y = "Mortality Rate")
@@ -438,7 +452,22 @@ server <- function(input, output, session) {
       labs(title = "Average Observed Mortality Rate by Procedure",
           x = "Procedure",
           y = "Mortality Rate")+
-      theme_light(base_size = 12)
+      theme_light(base_size = 14)
+      
+    })
+    
+     output$plot2c <- renderPlot({
+    
+    cardiac %>% 
+      filter(hospital_name == input$h) %>% 
+      group_by(procedure, hospital_name) %>% 
+      summarize(procedure_cases = sum(number_of_cases), .groups = 'keep') %>% 
+      ggplot(aes(x = procedure, y = procedure_cases))+
+      geom_col(color = "black", fill = "lightblue")+
+      labs(title = "Number of Cases per Procedure",
+          x = "Procedure",
+          y = "Number of Cases")+
+      theme_light(base_size = 14)
       
     })
     
@@ -465,28 +494,28 @@ server <- function(input, output, session) {
       group_by(facility_id, procedure) %>% 
       summarize(total_procedures = sum(number_of_cases), avg_mortality = mean(observed_mortality_rate)) %>%
       ggplot(aes(x = total_procedures, y = avg_mortality))+
-      geom_point(color = "olivedrab") +
+      geom_point(color = "olivedrab", na.rm = T) +
       labs(title = "Average Mortality Rate compared with Procedure Numbers ",
        x = "Total Number of Procedures",
        y = "Mortality Rate")+
      theme(axis.text.y = element_text(angle = 0, hjust = 1, size = 5))+
      theme_classic()+
      scale_x_log10()+
-     geom_smooth(method=lm, se=F)
+     geom_smooth(method=lm, se=F, formula = 'y ~ x')
     
   })
   
   output$plot4a <- renderPlot({
     
       ggmap(maptotal) + 
-  geom_point(data = x, aes(facility_longitude, facility_latitude, size = 1.5)) + labs(x= "Longitude", y= "Latitude", title="Cardiac Locations")
+  geom_point(data = x, aes(facility_longitude, facility_latitude, size = 1.5), na.rm= T) + labs(x= "Longitude", y= "Latitude", title="Cardiac Locations")
     
   })
   
   output$plot4b <- renderPlot({
     
     ggmap(maptotal) + 
-  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = number_of_cases, size = 1.5)) + #WE just add the chart in without using ggplot! 
+  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = number_of_cases, size = 1.5), na.rm= T) + #WE just add the chart in without using ggplot! 
   labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") 
     
   })
@@ -494,7 +523,7 @@ server <- function(input, output, session) {
   output$plot4c <- renderPlot({
     
     ggmap(maptotal) + 
-  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = average_moratality_rate, size = 1.5)) + #WE just add the chart in without using ggplot! 
+  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = average_moratality_rate, size = 1.5), na.rm= T) + #WE just add the chart in without using ggplot! 
   labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") 
     
   })
@@ -502,7 +531,7 @@ server <- function(input, output, session) {
   output$plot4d <- renderPlot({
     
     ggmap(maptotal) + 
-  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = total_deaths, size = 1.5)) + #WE just add the chart in without using ggplot! 
+  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = total_deaths, size = 1.5), na.rm= T) + #WE just add the chart in without using ggplot! 
   labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") 
     
   })
@@ -510,7 +539,7 @@ server <- function(input, output, session) {
   output$plot5a <- renderPlot({
     
     ggmap(mapnyc) + 
-  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = average_moratality_rate,size = 2.5)) + 
+  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = average_moratality_rate,size = 2.5), na.rm= T) + 
   labs(x= "Longitude", y= "Latitude", title="Cardiac Locations")
     
   })
@@ -518,7 +547,7 @@ server <- function(input, output, session) {
   output$plot5b <- renderPlot({
     
     ggmap(mapnyc) + 
-  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = number_of_cases, size = 2.5)) + 
+  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = number_of_cases, size = 2.5), na.rm= T) + 
   labs(x= "Longitude", y= "Latitude", title="Cardiac Locations")
     
   })
@@ -526,7 +555,7 @@ server <- function(input, output, session) {
   output$plot5c <- renderPlot({
     
     ggmap(mapnyc) + 
-  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = total_deaths, size = 2.5)) + 
+  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = total_deaths, size = 2.5), na.rm= T) + 
   labs(x= "Longitude", y= "Latitude", title="Cardiac Locations")
     
   })
