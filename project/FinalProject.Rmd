@@ -360,8 +360,8 @@ ui <- dashboardPage(skin = "purple",
           box(plotOutput("plot2a", height = 250)), # box is a container for the plot
           box(title = "Controls", # box is a container for the controls
               radioButtons("x", 
-               "Select Fill Variable:", 
-               choices=c("year_of_hospital_discharge", "procedure"),
+               "Select X Axis:", 
+               choices=c("year_of_hospital_discharge", "region"),
                selected="year_of_hospital_discharge")
           )
           ),
@@ -466,13 +466,13 @@ server <- function(input, output, session) {
   })
   
   
-    output$plot2a <- renderPlot({
+    output$plot2a <- renderPlot({ #this is a bigger picture of the two plots shown below
     
     cardiac %>%
-      ggplot(aes_string(x= "region", fill = input$x))+
+      ggplot(aes_string(x= input$x, fill = "procedure"))+
       geom_bar(position="dodge", alpha=0.8, color="black")+
-      labs(x=NULL, y=NULL, fill="Fill Variable")+theme(axis.text.x = element_text(angle=90,hjust = 1))
-      #fix this one
+      coord_flip()+
+      labs(x= NULL, y=NULL, fill= "Procedure")
     
   })
     
