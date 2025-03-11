@@ -104,7 +104,6 @@ cardiac %>%
 ```
 
 
-
 ## Plots
 
 What is the procedure with the highest observed mortality rate?
