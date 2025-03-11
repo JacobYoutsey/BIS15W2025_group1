@@ -9,6 +9,16 @@ date: "`r Sys.Date()`"
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r}
+cardiac %>% 
+  filter(facility_id!="0") %>% 
+  group_by(hospital_name) %>% 
+  summarise(mean_avg_rate=mean(observed_mortality_rate), total_cases_b=sum(number_of_cases)) %>% 
+  arrange(-mean_avg_rate) %>% 
+  mutate(total_deaths=mean_avg_rate/100*total_cases_b) %>% 
+  arrange(-total_deaths)
+```
+
 
 ## Load the libraries
 ```{r message=FALSE, warning=FALSE}
@@ -32,6 +42,8 @@ library(gtools)
 library(RColorBrewer)
 library(paletteer)
 library(ggthemes)
+
+
 ```
 
 ```{r}
@@ -43,8 +55,11 @@ options(scipen = 999)
 locations <- read.csv("data/Health_Facility_General_Information.csv") %>% 
   clean_names()
 
+
+
 cardiac <- read_csv("data/cardiac-surgery.csv") %>% 
-  clean_names()
+  clean_names() %>% 
+  filter(facility_id!=0)
 ```
 
 ```{r}
@@ -246,7 +261,10 @@ ggmap(mapnyc) +
 
 
 # For procedure tab - what to include - 1: Total number of each procedure, select for hospital, 2: Mortality rate for each procedure, select for year
-
+scale_fill_discrete(labels = c("Firmicutes_C" = "Firmicutes C", "Firmicutes_A" = "Firmicutes A", "Firmicutes_B" = "Firmicutes B"))
+scale_x_discrete(labels = c("case" = "diabetic", "control" = "none diabetic"))
+scale_shape_manual(values= c(16, 17),
+                     labels =c("FALSE" = "negative", "TRUE" = "positive"))
 ## Shiny App
 
 ```{r}
