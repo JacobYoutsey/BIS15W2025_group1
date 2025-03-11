@@ -330,23 +330,23 @@ ui <- dashboardPage(skin = "purple",
       tabItem(tabName = "dashboard", 
               h1(strong("These are plots produced based on the mortality rate observed in each New York hospital based on cardiac surgery results."), style = "font-size:20px"),
         fluidRow(
-          box(plotOutput("plot1a", height = 250)), 
-          box(title = "Controls", 
+          box(plotOutput("plot1a", height = 250), status = "primary", solidHeader = T, width = 6, title = "Plot"), 
+          box(title = "Controls", status = "info", solidHeader = T, width = 6, 
               selectInput("region", 
                           "Select Region:", 
                           choices=unique(cardiac$region))
           )
           ),
         fluidRow(
-          box(plotOutput("plot1b", height = 250)),
-          box(title = "Controls",
+          box(plotOutput("plot1b", height = 250), status = "primary", solidHeader = T, width = 6, title = "Plot"),
+          box(title = "Controls", status = "info", solidHeader = T, width = 6,
               selectInput("year",
                           "Select Year:",
                           choices = unique(cardiac$year_of_hospital_discharge)))
           ),
         fluidRow(
-          box(plotOutput("plot1c", height = 250)),
-          box(title = "Controls",
+          box(plotOutput("plot1c", height = 250), status = "primary", solidHeader = T, width = 6, title = "Plot"),
+          box(title = "Controls", status = "info", solidHeader = T, width = 6,
               selectInput("hospital",
                           "Select Hospital:",
                           choices = unique(cardiac$hospital_name)))
@@ -357,8 +357,8 @@ ui <- dashboardPage(skin = "purple",
       tabItem(tabName = "widgets",
               h1(strong("These are the plots observing the procedures performed in New York Hospitals"), style = "font-size:20px"),
         fluidRow(
-          box(plotOutput("plot2a", height = 250)), # box is a container for the plot
-          box(title = "Controls", # box is a container for the controls
+          box(plotOutput("plot2a", height = 250), status = "primary", solidHeader = T, width = 6, title = "Plot"), # box is a container for the plot
+          box(title = "Controls", status = "info", solidHeader = T, width = 6, # box is a container for the controls
               radioButtons("x", 
                "Select X Axis:", 
                choices=c("year_of_hospital_discharge", "region"),
@@ -366,15 +366,15 @@ ui <- dashboardPage(skin = "purple",
           )
           ),
         fluidRow(
-          box(plotOutput("plot2b", height = 250)),
-          box(title = "Controls",
+          box(plotOutput("plot2b", height = 250), status = "primary", solidHeader = T, width = 6, title = "Plot"),
+          box(title = "Controls", status = "info", solidHeader = T, width = 6,
               selectInput("p",
                           "Select Year:",
                           choices = unique(cardiac$year_of_hospital_discharge)))
           ),
         fluidRow(
-          box(plotOutput("plot2c", height = 250)),
-          box(title = "Controls",
+          box(plotOutput("plot2c", height = 250), status = "primary", solidHeader = T, width = 6, title = "Plot"),
+          box(title = "Controls", status = "info", solidHeader = T, width = 6,
               selectInput("h",
                           "Select Hospital:",
                           choices = unique(cardiac$hospital_name)))
@@ -385,8 +385,8 @@ ui <- dashboardPage(skin = "purple",
       tabItem(tabName = "cases",
               h1(strong("These are plots produced based on the number of cases of cardiac surgery performed in New York Hospitals."), style = "font-size:20px"),
         fluidRow(
-          box(plotOutput("plot3a", height = 250)), # box is a container for the plot
-          box(title = "Controls", # box is a container for the controls
+          box(plotOutput("plot3a", height = 250), status = "primary", solidHeader = T, width = 6, title = "Plot"), # box is a container for the plot
+          box(title = "Controls", status = "info", solidHeader = T, width = 6, # box is a container for the controls
               selectInput("a", 
                "Select Hospital:", 
                choices=c(unique(cardiac$hospital_name))
@@ -394,8 +394,8 @@ ui <- dashboardPage(skin = "purple",
           )
           ),
         fluidRow(
-          box(plotOutput("plot3b", height = 250)), # box is a container for the plot
-          box(title = "Controls", # box is a container for the controls
+          box(plotOutput("plot3b", height = 250), status = "primary", solidHeader = T, width = 6, title = "Plot"), # box is a container for the plot
+          box(title = "Controls", status = "info", solidHeader = T, width = 6, # box is a container for the controls
               selectInput("b", 
                "Select Year:", 
                choices=c(unique(cardiac$year_of_hospital_discharge))
@@ -407,18 +407,18 @@ ui <- dashboardPage(skin = "purple",
         tabItem(tabName = "map",
                 h1(strong("These are overall maps addressing different scenarios based on our dataset."), style = "font-size:20px"),
           fluidRow(
-            box(plotOutput("plot4a", height = 450)),
-            box(plotOutput("plot4b", height = 450)),
-            box(plotOutput("plot4c", height = 450)),
-            box(plotOutput("plot4d", height = 450))
+            box(plotOutput("plot4a", height = 450), status = "primary", solidHeader = T, width = 6, title = "Map"),
+            box(plotOutput("plot4b", height = 450), status = "primary", solidHeader = T, width = 6, title = "Map"),
+            box(plotOutput("plot4c", height = 450), status = "primary", solidHeader = T, width = 6, title = "Map"),
+            box(plotOutput("plot4d", height = 450), status = "primary", solidHeader = T, width = 6, title = "Map")
           )
           ),
       tabItem(tabName = "nyc",
               h1(strong("These are maps zoomed in on New York City addressing different scenarios based on our dataset."), style = "font-size:20px"),
               fluidRow(
-            box(plotOutput("plot5a", height = 450)),
-            box(plotOutput("plot5b", height = 450)),
-            box(plotOutput("plot5c", height = 450))
+            box(plotOutput("plot5a", height = 450), status = "primary", solidHeader = T, width = 6, title = "Map"),
+            box(plotOutput("plot5b", height = 450), status = "primary", solidHeader = T, width = 6, title = "Map"),
+            box(plotOutput("plot5c", height = 450), status = "primary", solidHeader = T, width = 6, title = "Map")
           )
           )
           )
