@@ -59,11 +59,8 @@ locations <- read.csv("data/Health_Facility_General_Information.csv") %>%
 
 cardiac <- read_csv("data/cardiac-surgery.csv") %>% 
   clean_names() %>% 
-<<<<<<< HEAD
-  filter(facility_id!=0)
-=======
+  filter(facility_id!=0) %>% 
   mutate(hospital_name = ifelse(hospital_name == 'Albany Med. Ctr', 'Albany Medical Center', hospital_name), hospital_name =     ifelse(hospital_name == 'Buffalo General Med Ctr', 'Buffalo General Hosp', hospital_name), hospital_name = ifelse(hospital_name == 'Bronx-Lebanon-Cncourse', 'Bronx-Lebanon-Concourse', hospital_name), hospital_name = ifelse(hospital_name == 'Brookdale Hosp Med Ctr', 'Brookdale Univ Hosp Med Ctr', hospital_name))
->>>>>>> d34ed3510988bc29dd54be6678139964bdc388bf
 ```
 
 ```{r}
@@ -471,12 +468,9 @@ server <- function(input, output, session) {
   
     output$plot2a <- renderPlot({
     
-    cardiac %>% 
-      group_by(region, year_of_hospital_discharge, procedure) %>% 
-      summarize(num_case = sum(number_of_cases), .groups = "drop") %>% 
-      filter(year_of_hospital_discharge == input$x & procedure == input$x) %>% 
-      ggplot(aes(x= region, y = num_case, fill = input$x))+
-      geom_col(position="dodge", alpha=0.8, color="black")+
+    cardiac %>%
+      ggplot(aes_string(x= "region", fill = input$x))+
+      geom_bar(position="dodge", alpha=0.8, color="black")+
       labs(x=NULL, y=NULL, fill="Fill Variable")+theme(axis.text.x = element_text(angle=90,hjust = 1))
       #fix this one
     
