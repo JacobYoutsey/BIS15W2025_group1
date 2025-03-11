@@ -44,7 +44,8 @@ locations <- read.csv("data/Health_Facility_General_Information.csv") %>%
   clean_names()
 
 cardiac <- read_csv("data/cardiac-surgery.csv") %>% 
-  clean_names()
+  clean_names() %>% 
+  mutate(hospital_name = ifelse(hospital_name == 'Albany Med. Ctr', 'Albany Medical Center', hospital_name), hospital_name =     ifelse(hospital_name == 'Buffalo General Med Ctr', 'Buffalo General Hosp', hospital_name), hospital_name = ifelse(hospital_name == 'Bronx-Lebanon-Cncourse', 'Bronx-Lebanon-Concourse', hospital_name), hospital_name = ifelse(hospital_name == 'Brookdale Hosp Med Ctr', 'Brookdale Univ Hosp Med Ctr', hospital_name))
 ```
 
 ```{r}
