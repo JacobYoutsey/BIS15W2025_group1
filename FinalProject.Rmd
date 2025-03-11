@@ -273,8 +273,8 @@ cardiac %>%
 
 ```{r}
 cardiac %>% 
-      group_by(region, year_of_hospital_discharge, procedure) %>% 
-      summarize(num_case = sum(number_of_cases), .groups = "drop") %>% 
+      group_by(region, procedure) %>% 
+      summarize(num_case = sum(number_of_cases), .groups = "keep") %>% 
       ggplot(aes_string(x="region", y = "num_case", fill = "procedure"))+
       geom_col(position="dodge", alpha=0.8, color="black")+
       labs(x=NULL, y=NULL, fill="Fill Variable")+theme(axis.text.x = element_text(angle=90,hjust = 1))
@@ -282,8 +282,8 @@ cardiac %>%
 
 ```{r}
 cardiac %>% 
-      group_by(region) %>% 
-      mutate(num_case = sum(number_of_cases))
+      group_by(region, year_of_hospital_discharge, procedure) %>% 
+      summarize(num_case = sum(number_of_cases), .groups = "drop")
 ```
 
 
@@ -472,11 +472,13 @@ server <- function(input, output, session) {
     output$plot2a <- renderPlot({
     
     cardiac %>% 
-      group_by(region) %>% 
-      mutate(num_case = sum(number_of_cases)) %>% 
+      group_by(region, year_of_hospital_discharge, procedure) %>% 
+      summarize(num_case = sum(number_of_cases), .groups = "drop") %>% 
+      filter(year_of_hospital_discharge == input$x & procedure == input$x) %>% 
       ggplot(aes(x= region, y = num_case, fill = input$x))+
       geom_col(position="dodge", alpha=0.8, color="black")+
       labs(x=NULL, y=NULL, fill="Fill Variable")+theme(axis.text.x = element_text(angle=90,hjust = 1))
+      #fix this one
     
   })
     
