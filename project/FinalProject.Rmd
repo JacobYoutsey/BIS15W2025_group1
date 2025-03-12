@@ -311,11 +311,21 @@ ui <- dashboardPage(
   ## Sidebar
   dashboardSidebar(
     sidebarMenu(
-      menuItem("Mortality Rate", tabName = "dashboard", icon = icon("skull")),
-      menuItem("Procedures", tabName = "widgets", icon = icon("stethoscope")),
-      menuItem("Cases", tabName = "cases", icon = icon("folder-open")),
-      menuItem("Maps", tabName = "map", icon = icon("earth-americas")),
-      menuItem("NYC Maps", tabName = "nyc", icon = icon("hotel"))
+      menuItem("Mortality Rate", 
+               tabName = "dashboard", 
+               icon = icon("skull")),
+      menuItem("Procedures", 
+               tabName = "widgets", 
+               icon = icon("stethoscope")),
+      menuItem("Cases", 
+               tabName = "cases", 
+               icon = icon("folder-open")),
+      menuItem("Maps", 
+               tabName = "map", 
+               icon = icon("earth-americas")),
+      menuItem("NYC Maps", 
+               tabName = "nyc", 
+               icon = icon("hotel"))
     ),
     useShinyjs()  # Activate shinyjs for dynamic control
   ),
