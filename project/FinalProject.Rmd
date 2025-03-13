@@ -9,16 +9,6 @@ date: "`r Sys.Date()`"
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r}
-cardiac %>% 
-  filter(facility_id!="0") %>% 
-  group_by(hospital_name) %>% 
-  summarise(mean_avg_rate=mean(observed_mortality_rate), total_cases_b=sum(number_of_cases)) %>% 
-  arrange(-mean_avg_rate) %>% 
-  mutate(total_deaths=mean_avg_rate/100*total_cases_b) %>% 
-  arrange(-total_deaths)
-```
-
 
 ## Load the libraries
 ```{r message=FALSE, warning=FALSE}
@@ -82,9 +72,6 @@ cardiac <- cardiac %>%
 Map Data:
 ```{r}
 register_stadiamaps("e2de824a-0995-4a51-915c-33c14c061e7b", write = FALSE) 
-cardiac %>%  #GET MAX LAT AND LON FROM CODE BELOW!!! EASY MAKES SENSE
-  select(facility_longitude, facility_latitude) %>% 
-  summary()
 
 lat <- c(40.58, 44.70) #we got tehse values from summary above
 long <- c(-78.87, -72.98)
@@ -224,6 +211,10 @@ Map:
 ```{r}
 #Overall deaths for all years:
 
+cardiac %>%  #GET MAX LAT AND LON FROM CODE BELOW!!! EASY MAKES SENSE
+  select(facility_longitude, facility_latitude) %>% 
+  summary()
+
 #All hospital map
 ggmap(maptotal) + 
   geom_point(data = x, aes(facility_longitude, facility_latitude)) + labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") 
@@ -283,6 +274,15 @@ cardiac %>%
       summarize(num_case = sum(number_of_cases), .groups = "drop")
 ```
 
+```{r}
+cardiac %>% 
+  filter(facility_id!="0") %>% 
+  group_by(hospital_name) %>% 
+  summarise(mean_avg_rate=mean(observed_mortality_rate), total_cases_b=sum(number_of_cases)) %>% 
+  arrange(-mean_avg_rate) %>% 
+  mutate(total_deaths=mean_avg_rate/100*total_cases_b) %>% 
+  arrange(-total_deaths)
+```
 
 # For procedure tab - what to include - 1: Total number of each procedure, select for hospital, 2: Mortality rate for each procedure, select for year
 scale_fill_discrete(labels = c("Firmicutes_C" = "Firmicutes C", "Firmicutes_A" = "Firmicutes A", "Firmicutes_B" = "Firmicutes B"))
