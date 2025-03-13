@@ -66,7 +66,7 @@ library(shinyjs)
 library(ggplot2)
 
 ui <- dashboardPage(
-  skin = "blue",
+  skin = "purple",
   
   
   dashboardHeader(
