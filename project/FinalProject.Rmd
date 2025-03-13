@@ -70,11 +70,10 @@ cardiac <- cardiac %>%
 ```
 
 ```{r}
+ranger_corps <- cardiac
+
 year_data <- cardiac %>% 
   filter(str_detect(year_of_hospital_discharge, "-", negate = TRUE))
-
-ranger_corps <- cardiac %>% 
-  filter(str_detect(year_of_hospital_discharge, "-", negate = FALSE))
 ```
 
 Map Data:
@@ -301,13 +300,6 @@ scale_shape_manual(values= c(16, 17),
 ## Shiny App
 
 ```{r}
-ranger_corps <- cardiac
-
-year_data <- cardiac %>% 
-  filter(str_detect(year_of_hospital_discharge, "-", negate = TRUE))
-```
-
-```{r}
 library(shiny)
 library(shinydashboard)
 library(shinyjs)
@@ -327,15 +319,15 @@ ui <- dashboardPage(
   ## Sidebar
   dashboardSidebar(
     sidebarMenu(
+      menuItem("Cases", 
+               tabName = "cases", 
+               icon = icon("folder-open")),
       menuItem("Mortality Rate", 
                tabName = "dashboard", 
                icon = icon("skull")),
       menuItem("Procedures", 
                tabName = "widgets", 
                icon = icon("stethoscope")),
-      menuItem("Cases", 
-               tabName = "cases", 
-               icon = icon("folder-open")),
       menuItem("Maps", 
                tabName = "map", 
                icon = icon("earth-americas")),
@@ -376,6 +368,25 @@ ui <- dashboardPage(
       "))
     ),
     tabItems(
+      
+            ## Cases Tab
+      tabItem(tabName = "cases",
+              h1(strong("Cases Based on Cardiac Surgery in New York Hospitals"), style = "font-size:24px; text-align:center; margin-bottom: 20px;"),
+              fluidRow(
+                box(plotOutput("plot3a", height = 250), status = "primary", solidHeader = T, width = 6, title = "Cases per Year"),
+                box(title = "Controls", status = "info", solidHeader = T, width = 6,
+                    selectInput("a", "Select Hospital:", choices = unique(year_data$hospital_name))
+                )
+              ),
+              fluidRow(
+                box(plotOutput("plot3b", height = 250), status = "primary", solidHeader = T, width = 6, title = "Cases vs Mortality Rate"),
+                box(title = "Controls", status = "info", solidHeader = T, width = 6,
+                    selectInput("b", "Select Year:", choices = unique(year_data$year_of_hospital_discharge))
+                )
+              )
+      ),
+      
+      
       ## Mortality Rate Tab
       tabItem(tabName = "dashboard", 
               h1(strong("Mortality Rate Analysis Based on Cardiac Surgery Results"), style = "font-size:24px; text-align:center; margin-bottom: 20px;"),
@@ -418,23 +429,6 @@ ui <- dashboardPage(
                 box(plotOutput("plot2c", height = 250), status = "primary", solidHeader = T, width = 6, title = "Procedure Cases per Hospital"),
                 box(title = "Controls", status = "info", solidHeader = T, width = 6,
                     selectInput("h", "Select Hospital:", choices = unique(year_data$hospital_name))
-                )
-              )
-      ),
-      
-      ## Cases Tab
-      tabItem(tabName = "cases",
-              h1(strong("Cases Based on Cardiac Surgery in New York Hospitals"), style = "font-size:24px; text-align:center; margin-bottom: 20px;"),
-              fluidRow(
-                box(plotOutput("plot3a", height = 250), status = "primary", solidHeader = T, width = 6, title = "Cases per Year"),
-                box(title = "Controls", status = "info", solidHeader = T, width = 6,
-                    selectInput("a", "Select Hospital:", choices = unique(year_data$hospital_name))
-                )
-              ),
-              fluidRow(
-                box(plotOutput("plot3b", height = 250), status = "primary", solidHeader = T, width = 6, title = "Cases vs Mortality Rate"),
-                box(title = "Controls", status = "info", solidHeader = T, width = 6,
-                    selectInput("b", "Select Year:", choices = unique(year_data$year_of_hospital_discharge))
                 )
               )
       ),
