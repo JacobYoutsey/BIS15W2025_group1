@@ -1273,35 +1273,35 @@ server <- function(input, output, session) {
     ggmap(maptotal) + 
       geom_point(data = x, aes(facility_longitude, facility_latitude, size = 2, color = average_moratality_rate), alpha = 0.8) +
       scale_color_gradient(low = "steelblue", high = "midnightblue") +
-      labs(x= "Longitude", y= "Latitude", title="Cardiac Locations")
+      labs(x= "Longitude", y= "Latitude", title="Cardiac Locations")+labs(colour = "Average Mortality Rate")+labs(legend.text = element_text(size = 14), legend.title = element_text(size = 15))
   })
   
   output$plot4b <- renderPlot({
     ggmap(maptotal) + 
       geom_point(data = x, aes(facility_longitude, facility_latitude, color  = number_of_cases, size = 2), alpha = 0.8) + 
       scale_color_gradient(low = "steelblue", high = "midnightblue") +
-      labs(x= "Longitude", y= "Latitude", title="Cases Distribution") 
+      labs(x= "Longitude", y= "Latitude", title="Cases Distribution") +labs(colour = "Number of Cases")+labs(legend.text = element_text(size = 14), legend.title = element_text(size = 15))
   })
   
   output$plot4c <- renderPlot({
     ggmap(maptotal) + 
       geom_point(data = x, aes(facility_longitude, facility_latitude, color  = average_moratality_rate, size = 2), alpha = 0.8) + 
       scale_color_gradient(low = "steelblue", high = "midnightblue") +
-      labs(x= "Longitude", y= "Latitude", title="Mortality Rate") 
+      labs(x= "Longitude", y= "Latitude", title="Mortality Rate")+labs(colour = "Average Mortality Rate")+labs(legend.text = element_text(size = 14), legend.title = element_text(size = 15))
   })
   
   output$plot4d <- renderPlot({
     ggmap(maptotal) + 
       geom_point(data = x, aes(facility_longitude, facility_latitude, color  = total_deaths, size = 2), alpha = 0.8) + 
       scale_color_gradient(low = "steelblue", high = "midnightblue") +
-      labs(x= "Longitude", y= "Latitude", title="Total Deaths") 
+      labs(x= "Longitude", y= "Latitude", title="Total Deaths") +labs(colour = "Total Deaths")+labs(legend.text = element_text(size = 14), legend.title = element_text(size = 15))
   })
   
   output$plot5a <- renderPlot({
     
     ggmap(mapnyc) + 
   geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = average_moratality_rate,size = 2.5), na.rm= T) + scale_color_gradient(low = "steelblue", high = "midnightblue") +
-  labs(x= "Longitude", y= "Latitude", title="Average Mortality Rate by Hospital")
+  labs(x= "Longitude", y= "Latitude", title="Average Mortality Rate by Hospital")+labs(colour = "Average Mortality Rate")+labs(legend.text = element_text(size = 14), legend.title = element_text(size = 15))
     
   })
   
@@ -1310,7 +1310,7 @@ server <- function(input, output, session) {
     ggmap(mapnyc) + 
   geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = number_of_cases, size = 2.5), na.rm= T) + 
   scale_color_gradient(low = "steelblue", high = "midnightblue") +
-  labs(x= "Longitude", y= "Latitude", title="Total Number of Cases")
+  labs(x= "Longitude", y= "Latitude", title="Total Number of Cases")+labs(colour = "Number of Cases")+labs(legend.text = element_text(size = 14), legend.title = element_text(size = 15))
     
   })
   
@@ -1319,7 +1319,7 @@ server <- function(input, output, session) {
     ggmap(mapnyc) + 
   geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = total_deaths, size = 2.5), na.rm= T) + 
   scale_color_gradient(low = "steelblue", high = "midnightblue") +
-  labs(x= "Longitude", y= "Latitude", title="Total Number of Deaths")
+  labs(x= "Longitude", y= "Latitude", title="Total Number of Deaths")+labs(colour = "Total Deaths")+labs(legend.text = element_text(size = 14), legend.title = element_text(size = 15))
     
   })
  
@@ -1618,35 +1618,35 @@ server <- function(input, output, session) {
     ggmap(maptotal) + 
       geom_point(data = x, aes(facility_longitude, facility_latitude, size = 2, color = average_moratality_rate), alpha = 0.8) +
       scale_color_gradient(low = "steelblue", high = "midnightblue") +
-      labs(x= "Longitude", y= "Latitude", title="Cardiac Locations")+labs(colour = "Average Mortality Rate")+labs(legend.text = element_text(size = 14), legend.title = element_text(size = 15))
+      labs(x= "Longitude", y= "Latitude", title="Cardiac Locations")
   })
   
   output$plot4b <- renderPlot({
     ggmap(maptotal) + 
       geom_point(data = x, aes(facility_longitude, facility_latitude, color  = number_of_cases, size = 2), alpha = 0.8) + 
       scale_color_gradient(low = "steelblue", high = "midnightblue") +
-      labs(x= "Longitude", y= "Latitude", title="Cases Distribution") +labs(colour = "Number of Cases")+labs(legend.text = element_text(size = 14), legend.title = element_text(size = 15))
+      labs(x= "Longitude", y= "Latitude", title="Cases Distribution")
   })
   
   output$plot4c <- renderPlot({
     ggmap(maptotal) + 
       geom_point(data = x, aes(facility_longitude, facility_latitude, color  = average_moratality_rate, size = 2), alpha = 0.8) + 
       scale_color_gradient(low = "steelblue", high = "midnightblue") +
-      labs(x= "Longitude", y= "Latitude", title="Mortality Rate") +labs(colour = "Average Mortality Rate")+labs(legend.text = element_text(size = 14), legend.title = element_text(size = 15))
+      labs(x= "Longitude", y= "Latitude", title="Mortality Rate") 
   })
   
   output$plot4d <- renderPlot({
     ggmap(maptotal) + 
       geom_point(data = x, aes(facility_longitude, facility_latitude, color  = total_deaths, size = 2), alpha = 0.8) + 
       scale_color_gradient(low = "steelblue", high = "midnightblue") +
-      labs(x= "Longitude", y= "Latitude", title="Total Deaths") +labs(colour = "Total Deaths")+labs(legend.text = element_text(size = 14), legend.title = element_text(size = 15))
+      labs(x= "Longitude", y= "Latitude", title="Total Deaths") 
   })
   
   output$plot5a <- renderPlot({
     
     ggmap(mapnyc) + 
   geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = average_moratality_rate,size = 2.5), na.rm= T) + scale_color_gradient(low = "steelblue", high = "midnightblue") +
-  labs(x= "Longitude", y= "Latitude", title="Average Mortality Rate by Hospital")+labs(colour = "Average Mortality Rate")+labs(legend.text = element_text(size = 14), legend.title = element_text(size = 15))
+  labs(x= "Longitude", y= "Latitude", title="Average Mortality Rate by Hospital")
     
   })
   
@@ -1655,7 +1655,7 @@ server <- function(input, output, session) {
     ggmap(mapnyc) + 
   geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = number_of_cases, size = 2.5), na.rm= T) + 
   scale_color_gradient(low = "steelblue", high = "midnightblue") +
-  labs(x= "Longitude", y= "Latitude", title="Total Number of Cases")+labs(colour = "Number of Cases")+labs(legend.text = element_text(size = 14), legend.title = element_text(size = 15))
+  labs(x= "Longitude", y= "Latitude", title="Total Number of Cases")
     
   })
   
@@ -1664,7 +1664,7 @@ server <- function(input, output, session) {
     ggmap(mapnyc) + 
   geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = total_deaths, size = 2.5), na.rm= T) + 
   scale_color_gradient(low = "steelblue", high = "midnightblue") +
-  labs(x= "Longitude", y= "Latitude", title="Total Number of Deaths")+labs(colour = "Total Deaths")+labs(legend.text = element_text(size = 14), legend.title = element_text(size = 15))
+  labs(x= "Longitude", y= "Latitude", title="Total Number of Deaths")
     
   })
  
