@@ -69,6 +69,14 @@ cardiac <- cardiac %>%
   filter(str_detect(year_of_hospital_discharge, "-", negate = TRUE))
 ```
 
+```{r}
+year_data <- cardiac %>% 
+  filter(str_detect(year_of_hospital_discharge, "-", negate = TRUE))
+
+ranger_corps <- cardiac %>% 
+  filter(str_detect(year_of_hospital_discharge, "-", negate = FALSE))
+```
+
 Map Data:
 ```{r}
 register_stadiamaps("e2de824a-0995-4a51-915c-33c14c061e7b", write = FALSE) 
@@ -94,6 +102,7 @@ bbox1 <- make_bbox(long1, lat1, f = 0.03)
 
 mapnyc <- get_stadiamap(bbox1, maptype = "stamen_terrain", zoom=8) 
 ```
+
 
 ## Cleaning the Data
 
@@ -628,13 +637,6 @@ server <- function(input, output, session) {
 shinyApp(ui, server)
 ```
 
-```{r}
-year_data <- cardiac %>% 
-  filter(str_detect(year_of_hospital_discharge, "-", negate = TRUE))
-
-ranger_corps <- cardiac %>% 
-  filter(str_detect(year_of_hospital_discharge, "-", negate = FALSE))
-```
 
 ```{r}
 library(shiny)
