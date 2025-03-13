@@ -1,17 +1,3 @@
----
-title: "Final Project"
-output: html_document
-date: "`r Sys.Date()`"
-
----
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-
-## Load the libraries
-```{r message=FALSE, warning=FALSE}
 library(tidyverse)
 library(janitor)
 library(naniar)
@@ -32,53 +18,35 @@ library(gtools)
 library(RColorBrewer)
 library(paletteer)
 library(ggthemes)
-```
 
-```{r}
-options(scipen = 999)
-```
 
-## Load the Data
-```{r}
-locations <- read.csv("data/Health_Facility_General_Information.csv") %>% 
+locations <- readr::read_csv("data/Health_Facility_General_Information.csv") %>% 
   clean_names()
 
-
-
-cardiac <- read_csv("data/cardiac-surgery.csv") %>% 
+cardiac <- readr::read_csv("data/cardiac-surgery.csv") %>% 
   clean_names() %>% 
   filter(facility_id!=0) %>% 
-  mutate(hospital_name = ifelse(hospital_name == 'Albany Med. Ctr', 'Albany Medical Center', hospital_name), hospital_name =     ifelse(hospital_name == 'Buffalo General Med Ctr', 'Buffalo General Hosp', hospital_name), hospital_name = ifelse(hospital_name == 'Bronx-Lebanon-Cncourse', 'Bronx-Lebanon-Concourse', hospital_name), hospital_name = ifelse(hospital_name == 'Brookdale Hosp Med Ctr', 'Brookdale Univ Hosp Med Ctr', hospital_name))
-```
+  mutate(hospital_name = ifelse(hospital_name == 'Albany Med. Ctr', 'Albany Medical Center', hospital_name), 
+         hospital_name = ifelse(hospital_name == 'Buffalo General Med Ctr', 'Buffalo General Hosp', hospital_name), 
+         hospital_name = ifelse(hospital_name == 'Bronx-Lebanon-Cncourse', 'Bronx-Lebanon-Concourse', hospital_name), 
+         hospital_name = ifelse(hospital_name == 'Brookdale Hosp Med Ctr', 'Brookdale Univ Hosp Med Ctr', hospital_name))
 
-```{r}
 locations <- locations %>% 
-    group_by(facility_id) %>% 
-    summarise(across(everything(), first)) 
-```
+  group_by(facility_id) %>% 
+  summarise(across(everything(), first)) 
 
-```{r}
 cardiac <- left_join(cardiac, locations, by="facility_id")
-```
-
-Have to separate the data, as some of them are over a range of a couple of years, some of them are year by year
-
-```{r}
-ranger_corps <- cardiac
 
 year_data <- cardiac %>% 
   filter(str_detect(year_of_hospital_discharge, "-", negate = TRUE))
-```
 
-Map Data:
-```{r}
 register_stadiamaps("e2de824a-0995-4a51-915c-33c14c061e7b", write = FALSE) 
 
-lat <- c(40.58, 44.70) #we got tehse values from summary above
+lat <- c(40.58, 44.70) 
 long <- c(-78.87, -72.98)
 bbox <- make_bbox(long, lat, f = 0.03)
 
-maptotal <- get_stadiamap(bbox, maptype = "stamen_terrain", zoom=7) #Make ur basemap, there are other styles which you could find from this link, https://docs.stadiamaps.com/themes/
+maptotal <- get_stadiamap(bbox, maptype = "stamen_terrain", zoom=7) 
 
 x <- cardiac %>% 
   arrange(hospital_name) %>% 
@@ -86,231 +54,27 @@ x <- cardiac %>%
   summarise(number_of_cases=sum(number_of_cases), average_moratality_rate=mean(observed_mortality_rate), .groups = 'keep') %>% 
   mutate(total_deaths=average_moratality_rate/100*number_of_cases) %>% 
   mutate(facility_latitude=as.numeric(facility_latitude), facility_longitude=as.numeric(facility_longitude))
-```
 
-```{r}
-lat1 <- c(40.58, 41.2) #we got tehse values from summary above
+lat1 <- c(40.58, 41.2) 
 long1 <- c(-74.5, -72.98)
 bbox1 <- make_bbox(long1, lat1, f = 0.03)
 
 mapnyc <- get_stadiamap(bbox1, maptype = "stamen_terrain", zoom=8) 
-```
 
-
-## Cleaning the Data
-
-```{r}
-cardiac %>%
-  mutate(across(everything(), tolower)) %>% 
-  mutate(across(everything(), ~ str_replace_all((.), " ", "_"))) %>% 
-  mutate(across(everything(), ~ str_replace_all((.), "__", "_"))) %>% 
-  mutate(across(-"year_of_hospital_discharge", ~ str_remove((.), "-"))) %>% 
-  mutate(across(number_of_cases:risk_adjusted_mortality_rate, as.numeric))
-```
-
-
-## Plots
-
-What is the procedure with the highest observed mortality rate?
-```{r}
-cardiac %>% 
-  group_by(procedure) %>% 
-  summarize(avg_mortality = mean(observed_mortality_rate)) %>% 
-  arrange(-avg_mortality)
-```
-
-```{r}
-cardiac %>% 
-  group_by(procedure) %>% 
-  summarize(avg_mortality = mean(observed_mortality_rate)) %>% 
-  ggplot(aes(x = reorder(procedure, avg_mortality), y = avg_mortality))+
-  geom_col(color = "black", fill = "lightblue")+
-  coord_flip()+
-  labs(title = "Average Observed Mortality Rate by Procedure",
-       x = "Procedure",
-       y = "Mortality Rate")+
-  theme_light(base_size = 12)
-```
-
-
-How has the mortality rate changed for cardiac surgery over time in each region?
-```{r}
-#I'll come back to this later if I figure out the year stuff but feel free to take a crack at it :)
-cardiac %>%
-  group_by(year_of_hospital_discharge) %>% 
-  summarize(observed_mortality_rate=mean(observed_mortality_rate)) %>% 
-  ggplot(aes(x =year_of_hospital_discharge, y = observed_mortality_rate))+
-  geom_col(color = "purple4", na.rm = T) + geom_smooth(method = lm, se= TRUE) + 
-  labs(title = "Regional Cardiac Surgery Morality Rates",
-       x = "Year of Hospital Discharge",
-       y = "Mean Observed Mortality Rate")
-```
-
-```{r}
-cardiac %>% 
-  filter(hospital_name == "albany_med._ctr") %>% 
-  group_by(year_of_hospital_discharge, hospital_name) %>% 
-  summarize(avg_mortality = mean(observed_mortality_rate), .groups = 'keep') %>% 
-  ggplot(aes(x = as.factor(year_of_hospital_discharge), y = avg_mortality, group = hospital_name))+
-  geom_line()+
-  geom_point()
-```
-
-
-How does the expected mortality rate compare to the observed mortality rate?
-```{r}
-#I don't know which graph to plot for this one but if you can figure it out that would be great. I was thinking maybe scatter but I don't know for sure
-
-#Expected mortality vs observed mortality
-
-cardiac %>%
-  ggplot(aes(x = expected_mortality_rate, y = observed_mortality_rate))+
-  geom_point(color = "steelblue") + geom_smooth(method = lm, se= TRUE) + 
-  labs(title = "Expected vs Observed Mortality Rate",
-       x = "Expected Mortality",
-       y = "Observed Mortality")
-```
-
-
-Which region has the highest mortality rate?
-```{r}
-cardiac %>% 
-  group_by(region) %>% 
-  summarize(avg_mortality = mean(observed_mortality_rate)) %>% 
-  arrange(-avg_mortality)
-```
-
-```{r}
-cardiac %>% 
-  group_by(region) %>% 
-  summarize(avg_mortality = mean(observed_mortality_rate)) %>% 
-  ggplot(aes(x = reorder(region, avg_mortality), y = avg_mortality))+
-  geom_col(color = "black", fill = "lightpink")+
-  coord_flip()+
-  labs(title = "Average Observed Mortality Rate per Region",
-       x = "Region",
-       y = "Mortality Rate")+
-  theme_light(base_size = 12)
-```
-
-
-COMPARING NUMBER OF TOTAL PROCEDURES WITH AVERAGE MORTALITY RATE
-```{r}
-total_cases <- cardiac %>% 
-  group_by(facility_id) %>% 
-  summarize(total_procedures = sum(number_of_cases), avg_mortality = mean(observed_mortality_rate)) %>%
-  ggplot(aes(x = total_procedures, y = avg_mortality))+
-  geom_point(color = "olivedrab") +
-  labs(title = "Average Mortality Rate compared with Procedure Numbers ",
-       x = "Total Number of Procedure",
-       y = "Mortality Rate")+
-  theme(axis.text.y = element_text(angle = 0, hjust = 1, size = 5))+
-  scale_x_log10()+geom_smooth(method=lm, se=F)
-total_cases
-```
-
-Map:
-```{r}
-#Overall deaths for all years:
-
-cardiac %>%  #GET MAX LAT AND LON FROM CODE BELOW!!! EASY MAKES SENSE
-  select(facility_longitude, facility_latitude) %>% 
-  summary()
-
-#All hospital map
-ggmap(maptotal) + 
-  geom_point(data = x, aes(facility_longitude, facility_latitude)) + labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") 
-
-#For number of cases
-ggmap(maptotal) + 
-  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = number_of_cases)) + #WE just add the chart in without using ggplot! 
-  labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") 
-
-#For mortality rate
-
-ggmap(maptotal) + 
-  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = average_moratality_rate)) + #WE just add the chart in without using ggplot! 
-  labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") 
-
-#For total deaths
-ggmap(maptotal) + 
-  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = total_deaths)) + #WE just add the chart in without using ggplot! 
-  labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") 
-
-#NYC Rate of mortaility
-ggmap(mapnyc) + 
-  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = average_moratality_rate)) + 
-  labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") #colour??
-
-#NYC Total Cases
-ggmap(mapnyc) + 
-  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = number_of_cases)) + 
-  labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") #colour??
-
-#NYC total deaths
-ggmap(mapnyc) + 
-  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = total_deaths)) + 
-  labs(x= "Longitude", y= "Latitude", title="Cardiac Locations") #colour??
-```
-
-```{r}
-cardiac %>% 
-  group_by(procedure, hospital_name) %>% 
-  summarize(procedure_cases = sum(number_of_cases), .groups = 'keep') %>% 
-  ggplot(aes(x = procedure, y = procedure_cases))+
-  geom_col()
-```
-
-```{r}
-cardiac %>% 
-      group_by(region, procedure) %>% 
-      summarize(num_case = sum(number_of_cases), .groups = "keep") %>% 
-      ggplot(aes_string(x="region", y = "num_case", fill = "procedure"))+
-      geom_col(position="dodge", alpha=0.8, color="black")+
-      labs(x=NULL, y=NULL, fill="Fill Variable")+theme(axis.text.x = element_text(angle=90,hjust = 1))
-```
-
-```{r}
-cardiac %>% 
-      group_by(region, year_of_hospital_discharge, procedure) %>% 
-      summarize(num_case = sum(number_of_cases), .groups = "drop")
-```
-
-```{r}
-cardiac %>% 
-  filter(facility_id!="0") %>% 
-  group_by(hospital_name) %>% 
-  summarise(mean_avg_rate=mean(observed_mortality_rate), total_cases_b=sum(number_of_cases)) %>% 
-  arrange(-mean_avg_rate) %>% 
-  mutate(total_deaths=mean_avg_rate/100*total_cases_b) %>% 
-  arrange(-total_deaths)
-```
-
-# For procedure tab - what to include - 1: Total number of each procedure, select for hospital, 2: Mortality rate for each procedure, select for year
-scale_fill_discrete(labels = c("Firmicutes_C" = "Firmicutes C", "Firmicutes_A" = "Firmicutes A", "Firmicutes_B" = "Firmicutes B"))
-scale_x_discrete(labels = c("case" = "diabetic", "control" = "none diabetic"))
-scale_shape_manual(values= c(16, 17),
-                     labels =c("FALSE" = "negative", "TRUE" = "positive"))
-## Shiny App
-
-```{r}
-library(shiny)
 library(shinydashboard)
 library(shinyjs)
 library(ggplot2)
-library(ggmap)
 
-# UI Layout
 ui <- dashboardPage(
   skin = "blue",
   
-  # Header
+  
   dashboardHeader(
     title = "Cardiac Dashboard",
     titleWidth = 250
   ),
   
-  ## Sidebar
+  
   dashboardSidebar(
     sidebarMenu(
       menuItem("Cases", 
@@ -329,13 +93,11 @@ ui <- dashboardPage(
                tabName = "nyc", 
                icon = icon("hotel"))
     ),
-    useShinyjs()  # Activate shinyjs for dynamic control
+    useShinyjs()  
   ),
   
-  ## Body content
   dashboardBody(
     tags$head(
-      # Add custom styles for the app
       tags$style(HTML("
         .box {
           border-radius: 8px;
@@ -363,7 +125,6 @@ ui <- dashboardPage(
     ),
     tabItems(
       
-            ## Cases Tab
       tabItem(tabName = "cases",
               h1(strong("Cases Based on Cardiac Surgery in New York Hospitals"), style = "font-size:24px; text-align:center; margin-bottom: 20px;"),
               fluidRow(
@@ -380,8 +141,7 @@ ui <- dashboardPage(
               )
       ),
       
-      
-      ## Mortality Rate Tab
+
       tabItem(tabName = "dashboard", 
               h1(strong("Mortality Rate Analysis Based on Cardiac Surgery Results"), style = "font-size:24px; text-align:center; margin-bottom: 20px;"),
               fluidRow(
@@ -404,7 +164,7 @@ ui <- dashboardPage(
               )
       ),
       
-      ## Procedures Tab
+
       tabItem(tabName = "widgets",
               h1(strong("Procedure Analysis in New York Hospitals"), style = "font-size:24px; text-align:center; margin-bottom: 20px;"),
               fluidRow(
@@ -427,7 +187,7 @@ ui <- dashboardPage(
               )
       ),
       
-      ## Maps Tab
+
       tabItem(tabName = "map",
               h1(strong("Overall Maps Based on Dataset"), style = "font-size:24px; text-align:center; margin-bottom: 20px;"),
               fluidRow(
@@ -440,7 +200,7 @@ ui <- dashboardPage(
               )
       ),
       
-      ## NYC Maps Tab
+
       tabItem(tabName = "nyc",
               h1(strong("Maps Zoomed in on New York City"), style = "font-size:24px; text-align:center; margin-bottom: 20px;"),
               fluidRow(
@@ -455,12 +215,11 @@ ui <- dashboardPage(
   )
 )
 
-# Server Function
 server <- function(input, output, session) {
   session$onSessionEnded(stopApp)
   
   output$plot1a <- renderPlot({
-
+    
     year_data %>%
       filter(region == input$region) %>%
       ggplot(aes(x = observed_mortality_rate))+ 
@@ -471,7 +230,7 @@ server <- function(input, output, session) {
   })
   
   output$plot1b <- renderPlot({
-
+    
     year_data %>%
       filter(year_of_hospital_discharge == input$year) %>%
       ggplot(aes(x = observed_mortality_rate))+ 
@@ -482,7 +241,7 @@ server <- function(input, output, session) {
   })
   
   output$plot1c <- renderPlot({
-
+    
     year_data %>% 
       filter(hospital_name == input$hospital) %>% 
       group_by(year_of_hospital_discharge, hospital_name) %>% 
@@ -496,7 +255,7 @@ server <- function(input, output, session) {
   })
   
   
-    output$plot2a <- renderPlot({ #this is a bigger picture of the two plots shown below
+  output$plot2a <- renderPlot({ #this is a bigger picture of the two plots shown below
     
     year_data %>%
       ggplot(aes_string(x= input$x, fill = "procedure"))+
@@ -505,8 +264,8 @@ server <- function(input, output, session) {
       labs(x= "Procedure Type", y= "New York Region", fill= "Procedure")
     
   })
-    
-    output$plot2b <- renderPlot({
+  
+  output$plot2b <- renderPlot({
     
     cardiac %>% 
       filter(year_of_hospital_discharge == input$p) %>% 
@@ -516,29 +275,29 @@ server <- function(input, output, session) {
       geom_col(color = "black", fill = "lightblue")+
       coord_flip()+
       labs(title = "Average Observed Mortality Rate by Procedure",
-          x = "Procedure",
-          y = "Mortality Rate")+
+           x = "Procedure",
+           y = "Mortality Rate")+
       theme_light(base_size = 14)
-      
-    })
     
-     output$plot2c <- renderPlot({
+  })
+  
+  output$plot2c <- renderPlot({
     
     year_data %>% 
       filter(hospital_name == input$h) %>% 
       group_by(procedure, hospital_name) %>% 
-      summarize(procedure_cases = sum(number_of_cases), .groups = 'keep') %>% 
+      summarize(procedure_cases = sum(number_of_cases), .groups = "keep") %>% 
       ggplot(aes(x = procedure, y = procedure_cases))+
       geom_col(color = "black", fill = "lightblue")+
       coord_flip() + 
       labs(title = "Number of Cases per Procedure",
-          x = "Procedure",
-          y = "Number of Cases")+
+           x = "Procedure",
+           y = "Number of Cases")+
       theme_light(base_size = 14)
-      
-    })
     
-    output$plot3a <- renderPlot({
+  })
+  
+  output$plot3a <- renderPlot({
     
     year_data %>% 
       filter(hospital_name == input$a) %>% 
@@ -549,11 +308,11 @@ server <- function(input, output, session) {
       labs(title = "Number of Cases per Year",
            x= "Year", 
            y= "Number of Cases")+
-        theme_light(base_size = 14)
+      theme_light(base_size = 14)
     
   })
-    
-    
+  
+  
   output$plot3b <- renderPlot({
     
     year_data %>% 
@@ -563,46 +322,47 @@ server <- function(input, output, session) {
       ggplot(aes(x = total_procedures, y = avg_mortality))+
       geom_point(color = "olivedrab", na.rm = T) +
       labs(title = "Average Mortality Rate compared with Procedure Numbers ",
-       x = "Total Number of Procedures",
-       y = "Mortality Rate")+
-     theme(axis.text.y = element_text(angle = 0, hjust = 1, size = 5))+
-     theme_classic()+
-     scale_x_log10()+
-     geom_smooth(method=lm, se=F, formula = 'y ~ x')
+           x = "Total Number of Procedures",
+           y = "Mortality Rate")+
+      theme(axis.text.y = element_text(angle = 0, hjust = 1, size = 5))+
+      theme_classic()+
+      scale_x_log10()+
+      geom_smooth(method=lm, se=F, formula = 'y ~ x')
     
   })
   
   output$plot4a <- renderPlot({
     
-      ggmap(maptotal) + 
-  geom_point(data = x, aes(facility_longitude, facility_latitude, size = 1.5), na.rm= T) + labs(x= "Longitude", y= "Latitude", title="Cardiac Locations")
+    ggmap(maptotal) + 
+      geom_point(data = x, aes(facility_longitude, facility_latitude, size = 1.5), na.rm= T) + 
+      labs(x= "Longitude", y= "Latitude", title="Cardiac Locations")
     
   })
   
   output$plot4a <- renderPlot({
     ggmap(maptotal) + 
-      geom_point(data = x, aes(facility_longitude, facility_latitude, size = 2, color = average_moratality_rate), alpha = 0.8) +
+      geom_point(data = x, aes(facility_longitude, facility_latitude, size = 2, color = average_moratality_rate), alpha = 0.8, na.rm = T) +
       scale_color_gradient(low = "steelblue", high = "midnightblue") +
       labs(x= "Longitude", y= "Latitude", title="Cardiac Locations")
   })
   
   output$plot4b <- renderPlot({
     ggmap(maptotal) + 
-      geom_point(data = x, aes(facility_longitude, facility_latitude, color  = number_of_cases, size = 2), alpha = 0.8) + 
+      geom_point(data = x, aes(facility_longitude, facility_latitude, color  = number_of_cases, size = 2), alpha = 0.8, na.rm = T) + 
       scale_color_gradient(low = "steelblue", high = "midnightblue") +
       labs(x= "Longitude", y= "Latitude", title="Cases Distribution") 
   })
   
   output$plot4c <- renderPlot({
     ggmap(maptotal) + 
-      geom_point(data = x, aes(facility_longitude, facility_latitude, color  = average_moratality_rate, size = 2), alpha = 0.8) + 
+      geom_point(data = x, aes(facility_longitude, facility_latitude, color  = average_moratality_rate, size = 2), alpha = 0.8, na.rm = T) + 
       scale_color_gradient(low = "steelblue", high = "midnightblue") +
       labs(x= "Longitude", y= "Latitude", title="Mortality Rate") 
   })
   
   output$plot4d <- renderPlot({
     ggmap(maptotal) + 
-      geom_point(data = x, aes(facility_longitude, facility_latitude, color  = total_deaths, size = 2), alpha = 0.8) + 
+      geom_point(data = x, aes(facility_longitude, facility_latitude, color  = total_deaths, size = 2), alpha = 0.8, na.rm = T) + 
       scale_color_gradient(low = "steelblue", high = "midnightblue") +
       labs(x= "Longitude", y= "Latitude", title="Total Deaths") 
   })
@@ -610,31 +370,32 @@ server <- function(input, output, session) {
   output$plot5a <- renderPlot({
     
     ggmap(mapnyc) + 
-  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = average_moratality_rate,size = 2.5), na.rm= T) + scale_color_gradient(low = "steelblue", high = "midnightblue") +
-  labs(x= "Longitude", y= "Latitude", title="Average Mortality Rate by Hospital")
+      geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = average_moratality_rate,size = 2.5), na.rm= T) + scale_color_gradient(low = "steelblue", high = "midnightblue") +
+      labs(x= "Longitude", y= "Latitude", title="Average Mortality Rate by Hospital")
     
   })
   
   output$plot5b <- renderPlot({
     
     ggmap(mapnyc) + 
-  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = number_of_cases, size = 2.5), na.rm= T) + 
-  scale_color_gradient(low = "steelblue", high = "midnightblue") +
-  labs(x= "Longitude", y= "Latitude", title="Total Number of Cases")
+      geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = number_of_cases, size = 2.5), na.rm= T) + 
+      scale_color_gradient(low = "steelblue", high = "midnightblue") +
+      labs(x= "Longitude", y= "Latitude", title="Total Number of Cases")
     
   })
   
   output$plot5c <- renderPlot({
     
     ggmap(mapnyc) + 
-  geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = total_deaths, size = 2.5), na.rm= T) + 
-  scale_color_gradient(low = "steelblue", high = "midnightblue") +
-  labs(x= "Longitude", y= "Latitude", title="Total Number of Deaths")
+      geom_point(data = x, aes(facility_longitude, facility_latitude, colour  = total_deaths, size = 2.5), na.rm= T) + 
+      scale_color_gradient(low = "steelblue", high = "midnightblue") +
+      labs(x= "Longitude", y= "Latitude", title="Total Number of Deaths")
     
   })
- 
+  
 }
 
-# Run the app
 shinyApp(ui, server)
-```
+
+
+
